@@ -138,7 +138,6 @@ export default function AdminPlanning() {
                 item.student,
                 item.title,
                 item.status,
-                item.status,
                 formatLocation(item.meetLink, item.room)
             ];
             tableRows.push(interviewData);
@@ -170,7 +169,6 @@ export default function AdminPlanning() {
             Entreprise: i.company,
             Etudiant: i.student,
             Titre: i.title,
-            Statut: i.status,
             Statut: i.status,
             Lieu: formatLocation(i.meetLink, i.room)
         })));
