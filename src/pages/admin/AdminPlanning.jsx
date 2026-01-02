@@ -1,12 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
+import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
-import { Calendar, Video, Building, User, Clock, Search, Filter, Bell, CheckCircle, ChevronRight, MoreHorizontal, MapPin, ExternalLink, CalendarDays, History, Layers, LayoutList, Download, FileText, FileSpreadsheet } from "lucide-react";
+import { Calendar, Video, Building, User, Clock, Search, Filter, Bell, CheckCircle, ChevronRight, MoreHorizontal, MapPin, ExternalLink, CalendarDays, History, Layers, LayoutList, Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import * as XLSX from "xlsx";
+import { calculateAge } from "../../utils/dateUtils";
+
 
 export default function AdminPlanning() {
     const [interviews, setInterviews] = useState([]);
@@ -16,6 +18,7 @@ export default function AdminPlanning() {
     const [filterCompany, setFilterCompany] = useState("");
     const [filterDate, setFilterDate] = useState("");
     const [groupBy, setGroupBy] = useState("none"); // 'none' | 'date' | 'company'
+    const [remindingId, setRemindingId] = useState(null);
 
     useEffect(() => {
         loadInterviews();
@@ -30,7 +33,8 @@ export default function AdminPlanning() {
                 ...d,
                 date: d.dateTime,
                 company: d.companyName,
-                student: d.studentName
+                student: d.studentName,
+                studentDateOfBirth: d.studentDateOfBirth
             }));
             setInterviews(mapped);
         } catch (error) {
@@ -43,10 +47,13 @@ export default function AdminPlanning() {
 
     const handleRemind = async (id) => {
         try {
+            setRemindingId(id);
             await adminApi.sendInterviewReminder(id);
             toast.success("Rappel envoyé !");
         } catch (err) {
             toast.error("Échec de l'envoi");
+        } finally {
+            setRemindingId(null);
         }
     };
 
@@ -135,7 +142,7 @@ export default function AdminPlanning() {
                 new Date(item.date).toLocaleDateString(),
                 new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 item.company,
-                item.student,
+                item.student + (item.studentDateOfBirth ? ` (${calculateAge(item.studentDateOfBirth)} ans)` : ""),
                 item.title,
                 item.status,
                 formatLocation(item.meetLink, item.room)
@@ -159,24 +166,33 @@ export default function AdminPlanning() {
     };
 
     const handleExportExcel = () => {
-        let title = "Planning";
-        if (filterCompany) title += `_${filterCompany}`;
-        if (filterDate) title += `_${filterDate}`;
+        let titleSuffix = "";
+        if (filterCompany) titleSuffix += ` - ${filterCompany}`;
+        if (filterDate) titleSuffix += ` - ${new Date(filterDate).toLocaleDateString()}`;
 
-        const ws = XLSX.utils.json_to_sheet(filteredInterviews.map(i => ({
-            Date: new Date(i.date).toLocaleDateString(),
-            Heure: new Date(i.date).toLocaleTimeString(),
-            Entreprise: i.company,
-            Etudiant: i.student,
-            Titre: i.title,
-            Statut: i.status,
-            Lieu: formatLocation(i.meetLink, i.room)
-        })));
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Planning");
+        const columns = [
+            { header: "Date", key: "date", width: 15 },
+            { header: "Heure", key: "time", width: 10 },
+            { header: "Entreprise", key: "company", width: 25 },
+            { header: "Etudiant", key: "student", width: 25 },
+            { header: "Age", key: "age", width: 10 },
+            { header: "Titre", key: "title", width: 30 },
+            { header: "Statut", key: "status", width: 15 },
+            { header: "Lieu", key: "location", width: 30 },
+        ];
 
-        const safeName = title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        XLSX.writeFile(wb, `${safeName}.xlsx`);
+        const data = filteredInterviews.map(i => ({
+            date: new Date(i.date).toLocaleDateString(),
+            time: new Date(i.date).toLocaleTimeString(),
+            company: i.company,
+            student: i.student,
+            age: i.studentDateOfBirth ? calculateAge(i.studentDateOfBirth) : "",
+            title: i.title,
+            status: i.status === 'COMPLETED' ? 'Terminé' : i.status === 'SCHEDULED' ? 'Prévu' : i.status,
+            location: formatLocation(i.meetLink, i.room)
+        }));
+
+        exportToExcel(`Planning_${new Date().toISOString().split('T')[0]}`, "Planning", columns, data, `Planning des Entretiens${titleSuffix}`);
         toast.success("Excel téléchargé !");
     };
 
@@ -324,7 +340,7 @@ export default function AdminPlanning() {
             <div className="space-y-6 pb-20">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 size={48} className="text-emerald-500 animate-spin" />
                         <p className="text-slate-500 font-bold animate-pulse">Organisation du calendrier...</p>
                     </div>
                 ) : filteredInterviews.length === 0 ? (
@@ -341,6 +357,7 @@ export default function AdminPlanning() {
                                 idx={idx}
                                 isGrouped={groupBy !== 'none'}
                                 onRemind={handleRemind}
+                                remindingId={remindingId}
                             />
                         ))}
                     </div>
@@ -351,14 +368,14 @@ export default function AdminPlanning() {
     );
 }
 
-function PlanningGroup({ title, items, idx, isGrouped, onRemind }) {
+function PlanningGroup({ title, items, idx, isGrouped, onRemind, remindingId }) {
     const [isExpanded, setIsExpanded] = useState(true);
 
     if (!isGrouped) {
         return (
             <div className="grid grid-cols-1 gap-4">
                 {items.map((item, i) => (
-                    <InterviewRow key={item.id} item={item} onRemind={() => onRemind(item.id)} delay={i} />
+                    <InterviewRow key={item.id} item={item} onRemind={() => onRemind(item.id)} delay={i} remindingId={remindingId} />
                 ))}
             </div>
         );
@@ -399,7 +416,7 @@ function PlanningGroup({ title, items, idx, isGrouped, onRemind }) {
                         className="grid grid-cols-1 gap-4 pb-4"
                     >
                         {items.map((item, i) => (
-                            <InterviewRow key={item.id} item={item} onRemind={() => onRemind(item.id)} delay={i} />
+                            <InterviewRow key={item.id} item={item} onRemind={() => onRemind(item.id)} delay={i} remindingId={remindingId} />
                         ))}
                     </motion.div>
                 )}
@@ -408,7 +425,7 @@ function PlanningGroup({ title, items, idx, isGrouped, onRemind }) {
     );
 }
 
-function InterviewRow({ item, onRemind, delay }) {
+function InterviewRow({ item, onRemind, delay, remindingId }) {
     const isToday = new Date(item.date).toDateString() === new Date().toDateString();
 
     return (
@@ -437,7 +454,7 @@ function InterviewRow({ item, onRemind, delay }) {
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400 font-medium">
                         <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500" /> {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1.5"><Building size={14} className="text-indigo-500" /> {item.company}</span>
-                        <span className="flex items-center gap-1.5"><User size={14} className="text-purple-500" /> {item.student}</span>
+                        <span className="flex items-center gap-1.5"><User size={14} className="text-purple-500" /> {item.student} {item.studentDateOfBirth ? `(${calculateAge(item.studentDateOfBirth)} ans)` : ""}</span>
                     </div>
                 </div>
             </div>
@@ -445,10 +462,11 @@ function InterviewRow({ item, onRemind, delay }) {
             <div className="flex items-center gap-3">
                 <button
                     onClick={onRemind}
-                    className="p-3 bg-slate-800 text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-500 rounded-xl transition-all border border-transparent hover:border-emerald-500/20"
+                    disabled={remindingId === item.id}
+                    className="p-3 bg-slate-800 text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-500 rounded-xl transition-all border border-transparent hover:border-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Envoyer rappel"
                 >
-                    <Bell size={20} />
+                    {remindingId === item.id ? <Loader2 size={20} className="animate-spin" /> : <Bell size={20} />}
                 </button>
 
                 {item.meetLink && item.meetLink.startsWith('http') ? (

@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
+import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
-import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Download, Calendar, ExternalLink, Briefcase, ChevronRight, Mail, GraduationCap } from "lucide-react";
+import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Download, Calendar, ExternalLink, Briefcase, ChevronRight, Mail, GraduationCap, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { calculateAge } from "../../utils/dateUtils";
 
 export default function AdminApplications() {
     const [applications, setApplications] = useState([]);
@@ -29,26 +31,26 @@ export default function AdminApplications() {
         }
     };
 
-    const handleExportCSV = () => {
-        const headers = ["Entreprise", "Étudiant", "Poste", "Statut", "Date"];
-        const rows = filteredApps.map(app => [
-            app.companyName,
-            app.applicantName,
-            app.jobTitle,
-            app.status,
-            new Date(app.createdAt).toLocaleDateString()
-        ]);
+    const handleExport = () => {
+        const columns = [
+            { header: "Entreprise", key: "company", width: 25 },
+            { header: "Étudiant", key: "student", width: 25 },
+            { header: "Poste", key: "job", width: 30 },
+            { header: "Age", key: "age", width: 10 },
+            { header: "Statut", key: "status", width: 15 },
+            { header: "Date", key: "date", width: 15 },
+        ];
 
-        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `candidatures_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const data = filteredApps.map(app => ({
+            company: app.companyName,
+            student: app.applicantName,
+            job: app.jobTitle,
+            age: app.applicantDateOfBirth ? calculateAge(app.applicantDateOfBirth) : "",
+            status: app.status === 'ACCEPTED' ? 'Acceptée' : app.status === 'REJECTED' ? 'Refusée' : 'En cours',
+            date: new Date(app.createdAt).toLocaleDateString()
+        }));
+
+        exportToExcel(`Candidatures_${new Date().toISOString().split('T')[0]}`, "Candidatures", columns, data, `Candidatures (${activeTab === 'all' ? 'Toutes' : activeTab})`);
     };
 
     const filteredApps = useMemo(() => {
@@ -92,10 +94,10 @@ export default function AdminApplications() {
                 </div>
 
                 <button
-                    onClick={handleExportCSV}
+                    onClick={handleExport}
                     className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95"
                 >
-                    <Download size={18} /> Exporter CSV
+                    <Download size={18} /> Exporter Excel
                 </button>
             </div>
 
@@ -125,7 +127,7 @@ export default function AdminApplications() {
             <div className="space-y-12 pb-20">
                 {loading ? (
                     <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 size={48} className="text-purple-500 animate-spin" />
                         <p className="text-slate-500 font-bold animate-pulse">Chargement des dossiers...</p>
                     </div>
                 ) : Object.keys(groupedApps).length === 0 ? (
@@ -184,6 +186,7 @@ export default function AdminApplications() {
                                     <DetailItem icon={Mail} label="Email" value={selectedApp.applicantEmail || 'Non disponible'} />
                                     <DetailItem icon={GraduationCap} label="Formation" value={selectedApp.applicantDomaine || 'Non spécifié'} />
                                     <DetailItem icon={Calendar} label="Niveau" value={selectedApp.applicantGrade || 'Non spécifié'} />
+                                    {selectedApp.applicantDateOfBirth && <DetailItem icon={Calendar} label="Âge" value={`${calculateAge(selectedApp.applicantDateOfBirth)} ans`} />}
                                 </div>
                             </div>
 
@@ -336,7 +339,10 @@ function ApplicationCard({ app, delay, onOpen }) {
                     <div>
                         <h4 className="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-1">Candidat Principal</h4>
                         <h3 className="text-xl font-black text-white leading-tight group-hover:text-purple-400 transition-colors">{app.applicantName}</h3>
-                        <p className="text-xs text-slate-500 font-bold mt-1">Postule pour <span className="text-slate-300">{app.jobTitle}</span></p>
+                        <p className="text-xs text-slate-500 font-bold mt-1">
+                            Postule pour <span className="text-slate-300">{app.jobTitle}</span>
+                            {app.applicantDateOfBirth && <span className="text-slate-400"> • {calculateAge(app.applicantDateOfBirth)} ans</span>}
+                        </p>
                     </div>
                 </div>
             </div>

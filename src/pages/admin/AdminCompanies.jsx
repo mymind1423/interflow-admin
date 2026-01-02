@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
+import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
-import { Check, X, Trash2, Building, Mail, MapPin, Search, Download, Briefcase, Filter, ChevronRight, XCircle, Users, Clock } from "lucide-react";
+import { Check, X, Trash2, Building, Mail, MapPin, Search, Download, Briefcase, Filter, ChevronRight, XCircle, Users, Clock, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function AdminCompanies() {
     const [activeTab, setActiveTab] = useState("all");
@@ -16,6 +18,12 @@ export default function AdminCompanies() {
     const [selectedCompany, setSelectedCompany] = useState(null);
     const [companyOffers, setCompanyOffers] = useState([]);
     const [loadingOffers, setLoadingOffers] = useState(false);
+
+    // Action loading states
+    const [approvingId, setApprovingId] = useState(null);
+    const [rejectingId, setRejectingId] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false });
 
     useEffect(() => {
         loadData();
@@ -36,33 +44,64 @@ export default function AdminCompanies() {
 
     const handleApprove = async (id) => {
         try {
+            setApprovingId(id);
             await adminApi.approveCompany(id);
             toast.success("Entreprise approuvée");
             loadData();
         } catch (err) {
             toast.error("Erreur lors de l'approbation");
+        } finally {
+            setApprovingId(null);
         }
+    };
+
+    const confirmReject = (company) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Refuser cette entreprise ?",
+            message: "L'entreprise sera notifiée du refus.",
+            confirmText: "Refuser l'accès",
+            isDangerous: true,
+            onConfirm: () => handleReject(company.id)
+        });
     };
 
     const handleReject = async (id) => {
-        if (!window.confirm("Refuser cette entreprise ?")) return;
         try {
+            setRejectingId(id);
             await adminApi.rejectCompany(id);
             toast.success("Entreprise refusée");
             loadData();
+            setConfirmModal({ isOpen: false });
         } catch (err) {
             toast.error("Erreur lors du refus");
+        } finally {
+            setRejectingId(null);
         }
     };
 
+    const confirmDelete = (company) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Supprimer cette entreprise ?",
+            message: "Cette action supprimera définitivement l'entreprise et toutes ses données (offres, candidatures associées).",
+            confirmText: "Supprimer définitivement",
+            isDangerous: true,
+            onConfirm: () => handleDelete(company.id)
+        });
+    };
+
     const handleDelete = async (id) => {
-        if (!window.confirm("Supprimer définitivement cette entreprise et toutes ses données ?")) return;
         try {
+            setDeletingId(id);
             await adminApi.deleteUser(id);
             toast.success("Entreprise supprimée");
             loadData();
+            setConfirmModal({ isOpen: false });
         } catch (err) {
             toast.error("Erreur lors de la suppression");
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -79,29 +118,24 @@ export default function AdminCompanies() {
         }
     };
 
-    const handleExportCSV = () => {
-        const headers = ["Nom", "Email", "Domaine", "Adresse", "Statut"];
-        const rows = filteredCompanies.map(c => [
-            c.name,
-            c.email,
-            c.domaine || "",
-            c.address || "",
-            c.status
-        ]);
+    const handleExport = () => {
+        const columns = [
+            { header: "Nom", key: "name", width: 30 },
+            { header: "Email", key: "email", width: 30 },
+            { header: "Domaine", key: "domaine", width: 25 },
+            { header: "Adresse", key: "address", width: 30 },
+            { header: "Statut", key: "status", width: 15 },
+        ];
 
-        const csvContent = [headers, ...rows]
-            .map(e => e.join(","))
-            .join("\n");
+        const data = filteredCompanies.map(c => ({
+            name: c.name,
+            email: c.email,
+            domaine: c.domaine || "",
+            address: c.address || "",
+            status: c.status === 'approved' ? 'Validé' : c.status === 'pending' ? 'En attente' : 'Refusé'
+        }));
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `entreprises_${activeTab}_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        exportToExcel(`Entreprises_${activeTab}_${new Date().toISOString().split('T')[0]}`, "Entreprises", columns, data, `Liste des Entreprises (${activeTab === 'all' ? 'Toutes' : activeTab})`);
     };
 
     const counts = useMemo(() => {
@@ -150,10 +184,10 @@ export default function AdminCompanies() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <button
-                        onClick={handleExportCSV}
+                        onClick={handleExport}
                         className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95"
                     >
-                        <Download size={18} /> Exporter CSV
+                        <Download size={18} /> Exporter Excel
                     </button>
                 </div>
             </div>
@@ -309,21 +343,24 @@ export default function AdminCompanies() {
                                                 icon={Check}
                                                 color="emerald"
                                                 label="Approuver"
+                                                loading={approvingId === company.id}
                                             />
                                             <ActionButton
-                                                onClick={() => handleReject(company.id)}
+                                                onClick={() => confirmReject(company)}
                                                 icon={X}
                                                 color="rose"
                                                 label="Refuser"
+                                                loading={rejectingId === company.id}
                                             />
                                         </div>
                                     ) : (
                                         <ActionButton
-                                            onClick={() => handleDelete(company.id)}
+                                            onClick={() => confirmDelete(company)}
                                             icon={Trash2}
                                             color="slate"
                                             hoverColor="rose"
                                             label="Supprimer"
+                                            loading={deletingId === company.id}
                                         />
                                     )}
                                 </div>
@@ -379,7 +416,22 @@ export default function AdminCompanies() {
                                 ) : (
                                     <div className="space-y-4">
                                         {companyOffers.map(offer => {
-                                            const remaining = Math.max(0, (offer.interviewQuota || 0) - (offer.acceptedCount || 0));
+                                            const remaining = Math.max(0, (offer.interviewQuota || 10) - (offer.applicationCount || 0));
+
+                                            // Determine display status
+                                            let statusLabel = "Fermé";
+                                            let statusClass = "bg-slate-700/50 text-slate-400 border-slate-600";
+
+                                            if (remaining) {
+                                                if (remaining === 0) {
+                                                    statusLabel = "Quota Atteint";
+                                                    statusClass = "bg-rose-500/10 text-rose-500 border-rose-500/20";
+                                                } else {
+                                                    statusLabel = "Ouvert";
+                                                    statusClass = "bg-emerald-500/10 text-emerald-500 border-emerald-500/20";
+                                                }
+                                            }
+
                                             return (
                                                 <div key={offer.id} className="p-6 bg-slate-950/50 border border-slate-800 rounded-3xl group hover:border-blue-500/30 transition-all flex flex-col gap-4 shadow-lg hover:shadow-blue-500/5 hover:-translate-y-1 duration-300">
                                                     <div className="flex justify-between items-start">
@@ -387,8 +439,8 @@ export default function AdminCompanies() {
                                                             <h4 className="font-black text-xl text-white group-hover:text-blue-400 transition-colors">{offer.title}</h4>
                                                             <div className="flex items-center gap-2 mt-2">
                                                                 <span className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-wider border border-blue-500/20">{offer.type}</span>
-                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${offer.isOpen ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-slate-700/50 text-slate-400 border-slate-600'}`}>
-                                                                    {offer.isOpen ? 'Ouvert' : 'Fermé'}
+                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${statusClass}`}>
+                                                                    {statusLabel}
                                                                 </span>
                                                             </div>
                                                         </div>
@@ -434,6 +486,17 @@ export default function AdminCompanies() {
                 )
                 }
             </AnimatePresence >
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                isDangerous={confirmModal.isDangerous}
+                onConfirm={confirmModal.onConfirm}
+                isLoading={!!rejectingId || !!deletingId}
+            />
         </AdminLayout>
     );
 }
@@ -463,7 +526,7 @@ function TabButton({ active, onClick, label, count, badgeColor = "bg-blue-600" }
     );
 }
 
-function ActionButton({ onClick, icon: Icon, color, hoverColor, label }) {
+function ActionButton({ onClick, icon: Icon, color, hoverColor, label, loading }) {
     const colors = {
         emerald: "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500",
         rose: "bg-rose-500/10 text-rose-500 hover:bg-rose-500",
@@ -477,9 +540,10 @@ function ActionButton({ onClick, icon: Icon, color, hoverColor, label }) {
         <button
             onClick={onClick}
             title={label}
-            className={`w-12 h-12 flex items-center justify-center rounded-2xl transition-all shadow-lg active:scale-90 ${colors[color]} ${finalHoverColor}`}
+            disabled={loading}
+            className={`w-12 h-12 flex items-center justify-center rounded-2xl transition-all shadow-lg active:scale-90 ${colors[color]} ${finalHoverColor} ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-            <Icon size={22} />
+            {loading ? <Loader2 size={22} className="animate-spin" /> : <Icon size={22} />}
         </button>
     );
 }

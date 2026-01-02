@@ -14,9 +14,11 @@ import {
   Cpu,
   RefreshCw,
   Terminal,
-  Activity
+  Activity,
+  Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
   <motion.div
@@ -54,6 +56,7 @@ export default function Dashboard() {
     loadData();
   }, []);
 
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -62,16 +65,19 @@ export default function Dashboard() {
         adminApi.getLogs()
       ]);
       setStats(sData);
-      setLogs(lData.slice(0, 5)); // Only show top 5
+      setLogs(lData.slice(0, 5));
+      if (!loading) toast.success("Données actualisées");
     } catch (error) {
       console.error("Failed to load dashboard data", error);
+      toast.error("Erreur de chargement");
     } finally {
       setLoading(false);
     }
   };
 
   const handleExportPDF = () => {
-    window.print();
+    toast.success("Préparation du PDF...");
+    setTimeout(() => window.print(), 500);
   };
 
   return (
@@ -142,7 +148,7 @@ export default function Dashboard() {
                 <Terminal className="text-blue-500" size={18} /> Audit Action Logs
               </h3>
               <button onClick={loadData} className="p-2 hover:bg-slate-800 rounded-xl transition-all text-slate-500 hover:text-white">
-                <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
+                {loading ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
               </button>
             </div>
             <div className="space-y-3">

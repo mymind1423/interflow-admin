@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminRoute from "./router/AdminRoutes";
 import { AdminAuthProvider } from "./context/AdminAuthContext";
 import { ToastProvider } from "./context/ToastContext";
+import { Toaster } from "react-hot-toast";
 
 import AdminLogin from "./pages/AdminLogin";
 import Dashboard from "./pages/AdminDashboard";
@@ -18,6 +19,7 @@ export default function App() {
     <BrowserRouter>
       <AdminAuthProvider>
         <ToastProvider>
+          <Toaster position="top-right" toastOptions={{ duration: 4000, style: { background: '#1e293b', color: '#fff', border: '1px solid #334155' } }} />
           <Routes>
             <Route path="/" element={<AdminLogin />} />
             <Route path="/login" element={<AdminLogin />} />

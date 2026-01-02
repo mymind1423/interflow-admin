@@ -1,9 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
+import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
-import { User, Mail, GraduationCap, FileText, Trash2, Search, Download, Filter, XCircle, Briefcase, Calendar, Phone, MapPin, Eye, ExternalLink, ChevronRight, Layers, LayoutList } from "lucide-react";
+import { User, Mail, GraduationCap, FileText, Trash2, Search, Download, Filter, XCircle, Briefcase, Calendar, Phone, MapPin, Eye, ExternalLink, ChevronRight, Layers, LayoutList, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { calculateAge } from "../../utils/dateUtils";
+import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function AdminStudents() {
     const [students, setStudents] = useState([]);
@@ -19,6 +22,10 @@ export default function AdminStudents() {
     const [studentInterviews, setStudentInterviews] = useState([]);
     const [loadingDetails, setLoadingDetails] = useState(false);
     const [detailTab, setDetailTab] = useState("info"); // 'info' | 'apps' | 'interviews'
+
+    // Action loading states
+    const [deletingId, setDeletingId] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false });
 
     useEffect(() => {
         loadStudents();
@@ -37,19 +44,32 @@ export default function AdminStudents() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm("Êtes-vous sûr ? Cette action supprimera définitivement le compte Firebase, toutes les données de profil et tous les documents (CV, Diplôme) de cet étudiant.")) return;
+    const confirmDelete = (student) => {
+        setConfirmModal({
+            isOpen: true,
+            title: "Supprimer cet étudiant ?",
+            message: "Cette action supprimera définitivement le compte Firebase, toutes les données de profil et tous les documents (CV, Diplôme).",
+            confirmText: "Supprimer définitivement",
+            isDangerous: true,
+            onConfirm: () => handleDelete(student.id)
+        });
+    };
 
+    const handleDelete = async (id) => {
         const loadingToast = toast.loading("Suppression en cours...");
         try {
+            setDeletingId(id);
             await adminApi.deleteUser(id);
             toast.dismiss(loadingToast);
             toast.success("Compte et données supprimés avec succès");
             loadStudents();
             if (selectedStudent?.id === id) setSelectedStudent(null);
+            setConfirmModal({ isOpen: false });
         } catch (err) {
             toast.dismiss(loadingToast);
             toast.error("Erreur lors de la suppression totale");
+        } finally {
+            setDeletingId(null);
         }
     };
 
@@ -72,26 +92,28 @@ export default function AdminStudents() {
         }
     };
 
-    const handleExportCSV = () => {
-        const headers = ["Nom complet", "Email", "Domaine", "Grade", "Status"];
-        const rows = filteredStudents.map(s => [
-            s.fullname || s.displayName,
-            s.email,
-            s.domaine || "",
-            s.grade || "",
-            s.status
-        ]);
+    const handleExport = () => {
+        const columns = [
+            { header: "Nom complet", key: "name", width: 25 },
+            { header: "Email", key: "email", width: 30 },
+            { header: "Domaine", key: "domaine", width: 25 },
+            { header: "Grade", key: "grade", width: 15 },
+            { header: "Age", key: "age", width: 10 },
+            { header: "Status", key: "status", width: 15 },
+        ];
 
-        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `etudiants_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const data = filteredStudents.map(s => ({
+            name: s.fullname || s.displayName,
+            email: s.email,
+            domaine: s.domaine || "",
+            grade: s.grade || "",
+            grade: s.grade || "",
+            age: s.dateOfBirth ? calculateAge(s.dateOfBirth) : "",
+            status: s.status === 'approved' ? 'Validé' : 'En attente'
+        }));
+
+        exportToExcel(`Etudiants_${new Date().toISOString().split('T')[0]}`, "Etudiants", columns, data, "Liste des Étudiants");
+        toast.success("Export Excel téléchargé !");
     };
 
     const domains = useMemo(() => {
@@ -145,10 +167,10 @@ export default function AdminStudents() {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <button
-                        onClick={handleExportCSV}
+                        onClick={handleExport}
                         className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95"
                     >
-                        <Download size={18} /> Exporter la liste
+                        <Download size={18} /> Exporter Excel
                     </button>
                 </div>
             </div>
@@ -248,7 +270,8 @@ export default function AdminStudents() {
                                 idx={idx}
                                 isGrouped={groupBy !== 'none'}
                                 onDetails={fetchStudentDetails}
-                                onDelete={handleDelete}
+                                onDelete={confirmDelete}
+                                deletingId={deletingId}
                             />
                         ))}
                     </div>
@@ -292,6 +315,7 @@ export default function AdminStudents() {
                                     <DetailItem icon={Mail} label="Email" value={selectedStudent.email} />
                                     <DetailItem icon={GraduationCap} label="Formation" value={selectedStudent.domaine || 'Non spécifié'} />
                                     <DetailItem icon={Calendar} label="Niveau" value={selectedStudent.grade || 'Non spécifié'} />
+                                    {selectedStudent.dateOfBirth && <DetailItem icon={Calendar} label="Âge" value={`${calculateAge(selectedStudent.dateOfBirth)} ans`} />}
                                     <DetailItem icon={StatusIcon} label="Statut Compte" value={selectedStudent.status === 'approved' ? 'Actif' : 'En attente'} />
                                 </div>
 
@@ -405,18 +429,29 @@ export default function AdminStudents() {
                     </div>
                 )}
             </AnimatePresence>
-        </AdminLayout>
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                isDangerous={confirmModal.isDangerous}
+                onConfirm={confirmModal.onConfirm}
+                isLoading={!!deletingId}
+            />
+        </AdminLayout >
     );
 }
 
-function StudentGroup({ title, students, idx, isGrouped, onDetails, onDelete }) {
+function StudentGroup({ title, students, idx, isGrouped, onDetails, onDelete, deletingId }) {
     const [isExpanded, setIsExpanded] = useState(true);
 
     if (!isGrouped) {
         return (
             <AnimatePresence mode="popLayout">
                 {students.map((student, i) => (
-                    <StudentCard key={student.id} student={student} idx={i} onDetails={onDetails} onDelete={onDelete} />
+                    <StudentCard key={student.id} student={student} idx={i} onDetails={onDetails} onDelete={onDelete} deletingId={deletingId} />
                 ))}
             </AnimatePresence>
         );
@@ -457,7 +492,7 @@ function StudentGroup({ title, students, idx, isGrouped, onDetails, onDelete }) 
                         className="overflow-hidden space-y-4 pb-4"
                     >
                         {students.map((student, i) => (
-                            <StudentCard key={student.id} student={student} idx={i} onDetails={onDetails} onDelete={onDelete} />
+                            <StudentCard key={student.id} student={student} idx={i} onDetails={onDetails} onDelete={onDelete} deletingId={deletingId} />
                         ))}
                     </motion.div>
                 )}
@@ -466,7 +501,7 @@ function StudentGroup({ title, students, idx, isGrouped, onDetails, onDelete }) 
     );
 }
 
-function StudentCard({ student, idx, onDetails, onDelete }) {
+function StudentCard({ student, idx, onDetails, onDelete, deletingId }) {
     return (
         <motion.div
             layout
@@ -495,8 +530,9 @@ function StudentCard({ student, idx, onDetails, onDelete }) {
                             <span className="font-medium">{student.email}</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-slate-400">
+
                             <GraduationCap size={14} className="text-indigo-500" />
-                            <span className="font-medium">{student.domaine || 'N/A'} {student.grade ? `• ${student.grade}` : ''}</span>
+                            <span className="font-medium">{student.domaine || 'N/A'} {student.grade ? `• ${student.grade}` : ''} {student.dateOfBirth ? `• ${calculateAge(student.dateOfBirth)} ans` : ''}</span>
                         </div>
                     </div>
                 </div>
@@ -511,10 +547,12 @@ function StudentCard({ student, idx, onDetails, onDelete }) {
                         <Eye size={18} /> Détails
                     </button>
                     <button
-                        onClick={() => onDelete(student.id)}
-                        className="w-12 h-12 flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-lg active:scale-90"
+                        align="center"
+                        onClick={() => onDelete(student)}
+                        disabled={deletingId === student.id}
+                        className={`w-12 h-12 flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-lg active:scale-90 ${deletingId === student.id ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
-                        <Trash2 size={20} />
+                        {deletingId === student.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
                     </button>
                 </div>
             </div>
