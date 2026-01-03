@@ -107,7 +107,6 @@ export default function AdminStudents() {
             email: s.email,
             domaine: s.domaine || "",
             grade: s.grade || "",
-            grade: s.grade || "",
             age: s.dateOfBirth ? calculateAge(s.dateOfBirth) : "",
             status: s.status === 'approved' ? 'Validé' : 'En attente'
         }));
