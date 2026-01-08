@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
-import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Download, Calendar, ExternalLink, Briefcase, ChevronRight, Mail, GraduationCap, Loader2 } from "lucide-react";
+import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Download, Calendar, ExternalLink, Briefcase, ChevronRight, Mail, GraduationCap, Loader2, LayoutGrid, List } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateAge } from "../../utils/dateUtils";
@@ -12,6 +12,7 @@ export default function AdminApplications() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState("all"); // 'all' | 'pending' | 'accepted' | 'rejected'
+    const [viewMode, setViewMode] = useState("grid"); // 'grid' | 'list'
     const [selectedApp, setSelectedApp] = useState(null);
 
     useEffect(() => {
@@ -105,12 +106,28 @@ export default function AdminApplications() {
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
                 <div className="xl:col-span-8 flex bg-slate-900/40 p-1.5 rounded-2xl border border-slate-800/50 backdrop-blur-sm overflow-x-auto">
                     <TabButton active={activeTab === 'all'} onClick={() => setActiveTab('all')} label="Toutes" count={applications.length} />
-                    <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} label="En cours" count={applications.filter(a => a.status === 'APPLIED' || a.status === 'REVIEWING').length} color="blue" />
+                    <TabButton active={activeTab === 'pending'} onClick={() => setActiveTab('pending')} label="En cours" count={applications.filter(a => !['ACCEPTED', 'REJECTED'].includes(a.status)).length} color="blue" />
                     <TabButton active={activeTab === 'accepted'} onClick={() => setActiveTab('accepted')} label="Acceptées" count={applications.filter(a => a.status === 'ACCEPTED').length} color="emerald" />
                     <TabButton active={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')} label="Rejetées" count={applications.filter(a => a.status === 'REJECTED').length} color="rose" />
                 </div>
-                <div className="xl:col-span-4">
-                    <div className="relative group">
+                <div className="xl:col-span-4 flex gap-3">
+                    <div className="flex bg-slate-900/40 p-1 rounded-xl border border-slate-800/50 backdrop-blur-sm shrink-0">
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-slate-800 text-purple-400 shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
+                            title="Vue Carte"
+                        >
+                            <LayoutGrid size={20} />
+                        </button>
+                        <button
+                            onClick={() => setViewMode('list')}
+                            className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-slate-800 text-purple-400 shadow-md' : 'text-slate-500 hover:text-slate-300'}`}
+                            title="Vue Liste"
+                        >
+                            <List size={20} />
+                        </button>
+                    </div>
+                    <div className="relative group flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-purple-500 transition-colors" size={20} />
                         <input
                             type="text"
@@ -136,7 +153,7 @@ export default function AdminApplications() {
                         <h3 className="text-xl font-bold text-slate-400">Aucune candidature trouvée</h3>
                         <p className="text-slate-500 mt-2">Aucun dossier ne correspond à vos filtres actuels.</p>
                     </div>
-                ) : (
+                ) : viewMode === 'grid' ? (
                     Object.entries(groupedApps).map(([companyName, apps], groupIdx) => (
                         <CompanyGroup
                             key={companyName}
@@ -146,6 +163,71 @@ export default function AdminApplications() {
                             onOpenApp={setSelectedApp}
                         />
                     ))
+                ) : (
+                    <div className="bg-slate-900/40 rounded-[2rem] border border-slate-800/50 overflow-hidden backdrop-blur-sm">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
+                                        <th className="p-6 font-black">Candidat</th>
+                                        <th className="p-6 font-black">Entreprise</th>
+                                        <th className="p-6 font-black">Poste</th>
+                                        <th className="p-6 font-black">Date</th>
+                                        <th className="p-6 font-black">Statut</th>
+                                        <th className="p-6 font-black text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800/50">
+                                    {filteredApps.map((app) => (
+                                        <tr key={app.id} className="hover:bg-slate-800/30 transition-colors group">
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden flex-shrink-0">
+                                                        {app.applicantPhoto ? (
+                                                            <img src={app.applicantPhoto} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-slate-500"><User size={16} /></div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-white group-hover:text-purple-400 transition-colors">{app.applicantName}</p>
+                                                        <p className="text-xs text-slate-500">{calculateAge(app.applicantDateOfBirth)} ans</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-white p-1 flex-shrink-0">
+                                                        {app.companyLogo ? <img src={app.companyLogo} className="w-full h-full object-contain" /> : <Building2 size={16} className="text-black" />}
+                                                    </div>
+                                                    <span className="font-bold text-slate-300">{app.companyName}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-6">
+                                                <span className="font-medium text-slate-300 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
+                                                    {app.jobTitle}
+                                                </span>
+                                            </td>
+                                            <td className="p-6 text-sm text-slate-500 font-medium">
+                                                {new Date(app.createdAt).toLocaleDateString()}
+                                            </td>
+                                            <td className="p-6">
+                                                <StatusPulse status={app.status} />
+                                            </td>
+                                            <td className="p-6 text-right">
+                                                <button
+                                                    onClick={() => setSelectedApp(app)}
+                                                    className="p-2 hover:bg-slate-800 text-slate-500 hover:text-white rounded-lg transition-colors"
+                                                >
+                                                    <ExternalLink size={18} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 )}
             </div>
 

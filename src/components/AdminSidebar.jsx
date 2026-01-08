@@ -45,9 +45,7 @@ function SidebarContent({ location, onItemClick }) {
     <>
       <div className="p-8">
         <Link to="/dashboard" onClick={onItemClick} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
-            IF
-          </div>
+          <img src="/logo.png" alt="AdminFlow" className="w-10 h-10 object-contain drop-shadow-lg group-hover:scale-110 transition-transform" />
           <span className="text-xl font-bold text-white tracking-tight">Admin<span className="text-blue-500">Flow</span></span>
         </Link>
       </div>

@@ -51,8 +51,8 @@ export default function AdminLogin() {
         className="w-full max-w-md relative z-10"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-2xl shadow-blue-600/20 mb-4 transform hover:scale-110 transition-transform cursor-pointer">
-            <ShieldCheck size={32} className="text-white" />
+          <div className="inline-flex items-center justify-center w-20 h-20 mb-4 transform hover:scale-110 transition-transform cursor-pointer">
+            <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-2xl" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Admin<span className="text-blue-500">Flow</span></h1>
           <p className="text-slate-400 mt-2 font-medium">Console d'administration sécurisée</p>
