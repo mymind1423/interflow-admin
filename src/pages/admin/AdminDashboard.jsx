@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { adminApi } from "../../api/adminApi";
 import { Users, Building, FileText, Calendar, Clock, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import { SkeletonStatCard } from "../../components/common/Skeletons";
 
 function StatCard({ label, value, icon: Icon, color, delay }) {
     return (
@@ -35,6 +36,8 @@ export default function AdminDashboard() {
         totalInterviews: 0
     });
 
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         loadStats();
     }, []);
@@ -45,6 +48,8 @@ export default function AdminDashboard() {
             setStats(data);
         } catch (error) {
             console.error("Failed to load admin stats", error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -61,48 +66,61 @@ export default function AdminDashboard() {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <StatCard
-                        label="Étudiants Inscrits"
-                        value={stats.totalStudents}
-                        icon={Users}
-                        color="text-blue-500"
-                        delay={0.1}
-                    />
-                    <StatCard
-                        label="Entreprises Actives"
-                        value={stats.activeCompanies}
-                        icon={Building}
-                        color="text-emerald-500"
-                        delay={0.2}
-                    />
-                    <StatCard
-                        label="Entreprises en Attente"
-                        value={stats.pendingCompanies}
-                        icon={Clock}
-                        color="text-orange-500"
-                        delay={0.3}
-                    />
-                    <StatCard
-                        label="Candidatures Totales"
-                        value={stats.totalApplications}
-                        icon={FileText}
-                        color="text-purple-500"
-                        delay={0.4}
-                    />
-                    <StatCard
-                        label="Entretiens Planifiés"
-                        value={stats.totalInterviews}
-                        icon={Calendar}
-                        color="text-pink-500"
-                        delay={0.5}
-                    />
-                    <StatCard
-                        label="Total Entreprises"
-                        value={stats.totalCompanies}
-                        icon={Building}
-                        color="text-slate-500"
-                        delay={0.6}
-                    />
+                    {loading ? (
+                        <>
+                            <SkeletonStatCard />
+                            <SkeletonStatCard />
+                            <SkeletonStatCard />
+                            <SkeletonStatCard />
+                            <SkeletonStatCard />
+                            <SkeletonStatCard />
+                        </>
+                    ) : (
+                        <>
+                            <StatCard
+                                label="Étudiants Inscrits"
+                                value={stats.totalStudents}
+                                icon={Users}
+                                color="text-blue-500"
+                                delay={0.1}
+                            />
+                            <StatCard
+                                label="Entreprises Actives"
+                                value={stats.activeCompanies}
+                                icon={Building}
+                                color="text-emerald-500"
+                                delay={0.2}
+                            />
+                            <StatCard
+                                label="Entreprises en Attente"
+                                value={stats.pendingCompanies}
+                                icon={Clock}
+                                color="text-orange-500"
+                                delay={0.3}
+                            />
+                            <StatCard
+                                label="Candidatures Totales"
+                                value={stats.totalApplications}
+                                icon={FileText}
+                                color="text-purple-500"
+                                delay={0.4}
+                            />
+                            <StatCard
+                                label="Entretiens Planifiés"
+                                value={stats.totalInterviews}
+                                icon={Calendar}
+                                color="text-pink-500"
+                                delay={0.5}
+                            />
+                            <StatCard
+                                label="Total Entreprises"
+                                value={stats.totalCompanies}
+                                icon={Building}
+                                color="text-slate-500"
+                                delay={0.6}
+                            />
+                        </>
+                    )}
                 </div>
             </div>
         </div>

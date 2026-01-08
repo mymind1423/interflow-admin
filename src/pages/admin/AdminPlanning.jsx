@@ -3,6 +3,7 @@ import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
 import { Calendar, Video, Building, User, Clock, Search, Filter, Bell, CheckCircle, ChevronRight, MoreHorizontal, MapPin, ExternalLink, CalendarDays, History, Layers, LayoutList, Download, FileText, FileSpreadsheet, Loader2 } from "lucide-react";
+import { SkeletonTable } from "../../components/common/Skeletons";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
@@ -339,10 +340,7 @@ export default function AdminPlanning() {
             {/* Timeline View */}
             <div className="space-y-6 pb-20">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 size={48} className="text-emerald-500 animate-spin" />
-                        <p className="text-slate-500 font-bold animate-pulse">Organisation du calendrier...</p>
-                    </div>
+                    <SkeletonTable />
                 ) : filteredInterviews.length === 0 ? (
                     <div className="text-center py-24 bg-slate-900/20 rounded-[2.5rem] border-2 border-dashed border-slate-800 text-slate-500 font-bold">
                         Aucun entretien correspondant.

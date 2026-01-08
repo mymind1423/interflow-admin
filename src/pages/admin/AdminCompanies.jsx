@@ -3,6 +3,7 @@ import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
 import { Check, X, Trash2, Building, Mail, MapPin, Search, Download, Briefcase, Filter, ChevronRight, XCircle, Users, Clock, Loader2 } from "lucide-react";
+import { SkeletonTable } from "../../components/common/Skeletons";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
@@ -269,10 +270,7 @@ export default function AdminCompanies() {
             {/* List */}
             <div className="space-y-4">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-slate-500 font-bold animate-pulse">Chargement des partenaires...</p>
-                    </div>
+                    <SkeletonTable />
                 ) : filteredCompanies.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}

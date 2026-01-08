@@ -5,6 +5,7 @@ import { adminApi } from "../../api/adminApi";
 import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Download, Calendar, ExternalLink, Briefcase, ChevronRight, Mail, GraduationCap, Loader2, LayoutGrid, List } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { SkeletonTable } from "../../components/common/Skeletons";
 import { calculateAge } from "../../utils/dateUtils";
 
 export default function AdminApplications() {
@@ -143,10 +144,7 @@ export default function AdminApplications() {
             {/* Application Content */}
             <div className="space-y-12 pb-20">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <Loader2 size={48} className="text-purple-500 animate-spin" />
-                        <p className="text-slate-500 font-bold animate-pulse">Chargement des dossiers...</p>
-                    </div>
+                    <SkeletonTable />
                 ) : Object.keys(groupedApps).length === 0 ? (
                     <div className="text-center py-24 bg-slate-900/20 rounded-[2.5rem] border-2 border-dashed border-slate-800">
                         <FileText size={48} className="mx-auto text-slate-800 mb-4" />

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import AdminLayout from '../../components/AdminLayout';
 import { adminApi } from '../../api/adminApi';
 import { Video, Clock, CheckCircle, RefreshCw, Filter, Search, Download, FileText, Layers, ChevronRight, Star, User, Building, Calendar, ExternalLink, Loader2 } from 'lucide-react';
+import { SkeletonTable } from '../../components/common/Skeletons';
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { exportToExcel } from "../../utils/excelExporter";
@@ -199,10 +200,7 @@ const LiveManager = () => {
             <div className="space-y-4">
                 {activeTab === 'live' ? (
                     loading && data.interviews.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-20 gap-4">
-                            <Loader2 size={48} className="text-indigo-500 animate-spin" />
-                            <p className="text-slate-500 font-bold animate-pulse">Chargement du planning...</p>
-                        </div>
+                        <SkeletonTable />
                     ) : data.interviews.length === 0 ? (
                         <EmptyState message="Aucun entretien prévu pour le moment." />
                     ) : (

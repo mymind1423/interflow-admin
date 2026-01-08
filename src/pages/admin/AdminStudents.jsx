@@ -3,6 +3,7 @@ import { exportToExcel } from "../../utils/excelExporter";
 import AdminLayout from "../../components/AdminLayout";
 import { adminApi } from "../../api/adminApi";
 import { User, Mail, GraduationCap, FileText, Trash2, Search, Download, Filter, XCircle, Briefcase, Calendar, Phone, MapPin, Eye, ExternalLink, ChevronRight, Layers, LayoutList, Loader2 } from "lucide-react";
+import { SkeletonTable } from "../../components/common/Skeletons";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { calculateAge } from "../../utils/dateUtils";
@@ -244,10 +245,7 @@ export default function AdminStudents() {
             {/* Main List */}
             <div className="space-y-4">
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 gap-4">
-                        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-slate-500 font-bold animate-pulse">Chargement des étudiants...</p>
-                    </div>
+                    <SkeletonTable />
                 ) : filteredStudents.length === 0 ? (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
