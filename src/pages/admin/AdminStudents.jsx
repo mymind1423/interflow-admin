@@ -35,8 +35,23 @@ export default function AdminStudents() {
     const loadStudents = async () => {
         setLoading(true);
         try {
-            const data = await adminApi.getStudents();
-            setStudents(data);
+            const [studentsData, appsData, interviewsData] = await Promise.all([
+                adminApi.getStudents(),
+                adminApi.getApplications(),
+                adminApi.getInterviews()
+            ]);
+
+            const enrichedStudents = studentsData.map(s => {
+                const sApps = appsData.filter(a => a.studentId === s.id);
+                const sInterviews = interviewsData.filter(i => i.studentId === s.id);
+                return {
+                    ...s,
+                    applicationCount: sApps.length,
+                    interviewCount: sInterviews.length
+                };
+            });
+
+            setStudents(enrichedStudents);
         } catch (error) {
             console.error(error);
             toast.error("Erreur chargement étudiants");
@@ -100,6 +115,8 @@ export default function AdminStudents() {
             { header: "Domaine", key: "domaine", width: 25 },
             { header: "Grade", key: "grade", width: 15 },
             { header: "Age", key: "age", width: 10 },
+            { header: "Candidatures", key: "apps", width: 10 },
+            { header: "Entretiens", key: "interviews", width: 10 },
             { header: "Status", key: "status", width: 15 },
         ];
 
@@ -107,8 +124,10 @@ export default function AdminStudents() {
             name: s.fullname || s.displayName,
             email: s.email,
             domaine: s.domaine || "",
-            grade: s.grade || "",
             age: s.dateOfBirth ? calculateAge(s.dateOfBirth) : "",
+            grade: s.grade || "",
+            apps: s.applicationCount || 0,
+            interviews: s.interviewCount || 0,
             status: s.status === 'approved' ? 'Validé' : 'En attente'
         }));
 
@@ -529,7 +548,16 @@ function StudentCard({ student, idx, onDetails, onDelete, deletingId }) {
                         <div className="flex items-center gap-2 text-sm text-slate-400">
 
                             <GraduationCap size={14} className="text-indigo-500" />
-                            <span className="font-medium">{student.domaine || 'N/A'} {student.grade ? `• ${student.grade}` : ''} {student.dateOfBirth ? `• ${calculateAge(student.dateOfBirth)} ans` : ''}</span>
+                            <GraduationCap size={14} className="text-indigo-500" />
+                            <span className="font-medium">{student.domaine || 'N/A'} {student.grade ? `• ${student.grade}` : ''}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                            <Briefcase size={14} className="text-emerald-500" />
+                            <span className="font-medium">{student.applicationCount || 0} Cands.</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                            <Calendar size={14} className="text-purple-500" />
+                            <span className="font-medium">{student.interviewCount || 0} Entretiens</span>
                         </div>
                     </div>
                 </div>

@@ -33,7 +33,11 @@ export default function AdminDashboard() {
         pendingCompanies: 0,
         activeCompanies: 0,
         totalApplications: 0,
-        totalInterviews: 0
+        totalApplications: 0,
+        totalInterviews: 0,
+        marketingRate: 0,
+        totalRetained: 0,
+        studentsWithoutInterviews: 0
     });
 
     const [loading, setLoading] = useState(true);
@@ -44,8 +48,27 @@ export default function AdminDashboard() {
 
     const loadStats = async () => {
         try {
-            const data = await adminApi.getStats();
-            setStats(data);
+            const [baseStats, apps, interviews, students] = await Promise.all([
+                adminApi.getStats(),
+                adminApi.getApplications(),
+                adminApi.getInterviews(),
+                adminApi.getStudents() // Needed to count students without interviews
+            ]);
+
+            // Compute frontend stats
+            const acceptedInterviews = interviews.filter(i => i.status === 'ACCEPTED' || i.status === 'COMPLETED').length;
+            const matchingRate = apps.length > 0 ? ((acceptedInterviews / apps.length) * 100).toFixed(1) : 0;
+
+            // Students without interviews
+            const studentsWithInterviews = new Set(interviews.map(i => i.studentId));
+            const studentsWithoutInterviews = students.length - studentsWithInterviews.size;
+
+            setStats({
+                ...baseStats,
+                matchingRate,
+                totalRetained: acceptedInterviews,
+                studentsWithoutInterviews
+            });
         } catch (error) {
             console.error("Failed to load admin stats", error);
         } finally {
@@ -111,6 +134,27 @@ export default function AdminDashboard() {
                                 icon={Calendar}
                                 color="text-pink-500"
                                 delay={0.5}
+                            />
+                            <StatCard
+                                label="Taux de Matching"
+                                value={`${stats.matchingRate}%`}
+                                icon={CheckCircle}
+                                color="text-emerald-500"
+                                delay={0.6}
+                            />
+                            <StatCard
+                                label="Total Retenus"
+                                value={stats.totalRetained}
+                                icon={Users}
+                                color="text-blue-500"
+                                delay={0.7}
+                            />
+                            <StatCard
+                                label="Étudiants sans entretien"
+                                value={stats.studentsWithoutInterviews}
+                                icon={Users}
+                                color="text-rose-500"
+                                delay={0.8}
                             />
                             <StatCard
                                 label="Total Entreprises"

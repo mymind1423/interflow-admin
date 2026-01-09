@@ -33,8 +33,28 @@ export default function AdminCompanies() {
     const loadData = async () => {
         setLoading(true);
         try {
-            const data = await adminApi.getCompanies();
-            setCompanies(data);
+            const [companiesData, appsData, jobsData] = await Promise.all([
+                adminApi.getCompanies(),
+                adminApi.getApplications(),
+                adminApi.getJobs()
+            ]);
+
+            const enrichedCompanies = companiesData.map(c => {
+                const cApps = appsData.filter(a => a.companyId === c.id);
+                const cJobs = jobsData.filter(j => j.companyId === c.id && j.status === 'open');
+
+                const hired = cApps.filter(a => a.status === 'ACCEPTED' || a.status === 'HIRED').length;
+                const conversion = cApps.length > 0 ? ((hired / cApps.length) * 100).toFixed(1) : 0;
+
+                return {
+                    ...c,
+                    activeOffers: cJobs, // Now an array of jobs
+                    candidateCount: cApps.length,
+                    conversionRate: conversion
+                };
+            });
+
+            setCompanies(enrichedCompanies);
         } catch (error) {
             console.error(error);
             toast.error("Erreur chargement données");
@@ -121,18 +141,22 @@ export default function AdminCompanies() {
 
     const handleExport = () => {
         const columns = [
-            { header: "Nom", key: "name", width: 30 },
-            { header: "Email", key: "email", width: 30 },
-            { header: "Domaine", key: "domaine", width: 25 },
-            { header: "Adresse", key: "address", width: 30 },
-            { header: "Statut", key: "status", width: 15 },
+            { header: "Nom", key: "name", width: 25 },
+            { header: "Email", key: "email", width: 20 },
+            { header: "Domaine", key: "domaine", width: 15 },
+            { header: "Offres", key: "activeOffers", width: 10 },
+            { header: "Candidats", key: "candidateCount", width: 10 },
+            { header: "Conversion", key: "conversionRate", width: 10 },
+            { header: "Statut", key: "status", width: 10 },
         ];
 
         const data = filteredCompanies.map(c => ({
             name: c.name,
             email: c.email,
             domaine: c.domaine || "",
-            address: c.address || "",
+            activeOffers: c.activeOffers || 0,
+            candidateCount: c.candidateCount || 0,
+            conversionRate: `${c.conversionRate}%`,
             status: c.status === 'approved' ? 'Validé' : c.status === 'pending' ? 'En attente' : 'Refusé'
         }));
 
@@ -305,29 +329,50 @@ export default function AdminCompanies() {
                                     <div>
                                         <div className="flex items-center gap-3">
                                             <h3 className="text-xl font-black text-white">{company.name}</h3>
-                                            {company.status === 'approved' && <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>}
+                                            {company.status === 'approved' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>}
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 mt-3">
+                                        <div className="flex flex-wrap gap-x-8 gap-y-2 mt-3">
                                             <div className="flex items-center gap-2 text-sm text-slate-400">
-                                                <Mail size={14} className="text-blue-500" />
+                                                <Mail size={15} className="text-blue-500" />
                                                 <span className="font-medium">{company.email}</span>
                                             </div>
                                             <div className="flex items-center gap-2 text-sm text-slate-400">
-                                                <Building size={14} className="text-indigo-500" />
+                                                <Building size={15} className="text-indigo-500" />
                                                 <span className="font-medium">{company.domaine || 'Non renseigné'}</span>
                                             </div>
+                                            <div className="flex flex-col gap-1 text-sm text-slate-400">
+                                                <div className="flex items-center gap-2">
+                                                    <Briefcase size={15} className="text-emerald-500" />
+                                                    <span className="font-medium">{company.activeOffers?.length || 0} Offres actives</span>
+                                                </div>
+                                                {company.activeOffers?.length > 0 && (
+                                                    <div className="pl-6 flex flex-col gap-0.5">
+                                                        {company.activeOffers.map(j => (
+                                                            <span key={j.id} className="text-xs text-slate-500">• {j.title}</span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div className="flex items-center gap-2 text-sm text-slate-400">
-                                                <MapPin size={14} className="text-rose-500" />
-                                                <span className="font-medium">{company.address || 'Non renseignée'}</span>
+                                                <Users size={15} className="text-blue-500" />
+                                                <span className="font-medium">{company.candidateCount || 0} Candidats</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-slate-400">
+                                                <Check size={15} className="text-purple-500" />
+                                                <span className="font-medium">{company.conversionRate || 0}% Conv.</span>
                                             </div>
                                         </div>
-                                        <div className="mt-4 flex flex-wrap gap-2">
-                                            <StatusBadge status={company.status} />
+                                        <div className="flex items-center gap-3 mt-4">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${company.status === 'approved' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
+                                                company.status === 'rejected' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+                                                }`}>
+                                                {company.status === 'approved' ? 'VALIDÉ' : company.status === 'rejected' ? 'REFUSÉ' : 'EN ATTENTE'}
+                                            </span>
                                             <button
                                                 onClick={() => fetchCompanyOffers(company)}
-                                                className="px-3 py-1 bg-blue-500/10 text-blue-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20 hover:bg-blue-500 hover:text-white transition-all flex items-center gap-1.5"
+                                                className="px-4 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-bold text-blue-400 flex items-center gap-2 hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all"
                                             >
-                                                <Briefcase size={12} /> Voir Offres
+                                                <Briefcase size={14} /> VOIR OFFRES
                                             </button>
                                         </div>
                                     </div>

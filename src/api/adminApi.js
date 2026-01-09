@@ -5,6 +5,7 @@ export const adminApi = {
   getStats: () => apiFetch("/api/admin/stats"),
   getStudents: () => apiFetch("/api/admin/students"),
   getCompanies: () => apiFetch("/api/admin/companies"),
+  getJobs: () => apiFetch("/api/admin/jobs"),
   getPendingCompanies: () => apiFetch("/api/admin/companies/pending"),
   approveCompany: (id) => apiFetch("/api/admin/companies/approve", { method: "POST", body: JSON.stringify({ id }) }),
   rejectCompany: (id) => apiFetch("/api/admin/companies/reject", { method: "POST", body: JSON.stringify({ id }) }),
