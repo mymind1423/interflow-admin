@@ -1,347 +1,341 @@
+import React, { useState, useEffect } from "react";
 import AdminLayout from "../components/AdminLayout";
-import { useAdminAuth } from "../context/AdminAuthContext";
 import { adminApi } from "../api/adminApi";
-import { useState } from "react";
-import { useEffect } from "react";
-import { SettingsIcon, Terminal, User, Save, Bell, Activity, Shield, Lock, Database, Monitor, RefreshCw, XCircle, Search } from "lucide-react";
-import { AnimatePresence } from "framer-motion";
+import {
+  Settings as SettingsIcon,
+  Workflow,
+  Users as UsersIcon,
+  Bell,
+  ShieldCheck,
+  Save,
+  RefreshCw,
+  ChevronRight,
+  Globe,
+  Sliders,
+  Mail,
+  Zap
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-// ... keep other imports ...
 
-// ... keep SettingItem component ...
+const SECTIONS = [
+  { id: 'general', label: 'Général', icon: Globe, desc: 'Identité et branding' },
+  { id: 'workflow', label: 'Workflow', icon: Workflow, desc: 'Automatisations & Seuils' },
+  { id: 'team', label: 'Équipe', icon: UsersIcon, desc: 'Rôles & Permissions' },
+  { id: 'notifications', label: 'Notifications', icon: Bell, desc: 'Triggers & Alertes' }
+];
 
 export default function Settings() {
-  // ... keep state and effects ...
-  const { admin, refreshAdmin } = useAdminAuth();
-  const [displayName, setDisplayName] = useState(admin?.displayName || "");
-  const [isSaving, setIsSaving] = useState(false);
-  const [settings, setSettings] = useState({});
-  const [logs, setLogs] = useState([]);
-  const [showLogs, setShowLogs] = useState(false);
-  const [logSearch, setLogSearch] = useState("");
+  const [activeSection, setActiveSection] = useState('general');
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [settings, setSettings] = useState({
+    general: { platformName: "", promoName: "", contactEmail: "" },
+    workflow: { retentionThreshold: 75, interviewSlotDuration: 30, autoApproveCompanies: false, maxApplicationsPerStudent: 5, validationEnabled: true },
+    team: { allowShadowing: true, visibleEvaluations: false },
+    notifications: { emailStudentOnStatusChange: true, emailAdminOnNewRegistration: true, emailCompanyOnNewApplication: true }
+  });
 
   useEffect(() => {
-    loadData();
-    const interval = setInterval(loadLogs, 10000);
-    return () => clearInterval(interval);
+    loadSettings();
   }, []);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadSettings = async () => {
     try {
-      const [sData, lData] = await Promise.all([
-        adminApi.getSettings(),
-        adminApi.getLogs()
-      ]);
-      setSettings(sData);
-      setLogs(lData);
+      const data = await adminApi.getSettings();
+      // Safe merge with default structure
+      setSettings(prev => ({
+        ...prev,
+        ...data,
+        general: { ...prev.general, ...(data.general || {}) },
+        workflow: { ...prev.workflow, ...(data.workflow || {}) },
+        team: { ...prev.team, ...(data.team || {}) },
+        notifications: { ...prev.notifications, ...(data.notifications || {}) }
+      }));
     } catch (err) {
-      toast.error("Erreur de chargement");
+      toast.error("Échec du chargement des paramètres");
     } finally {
       setLoading(false);
     }
   };
 
-  const loadLogs = async () => {
-    try {
-      const lData = await adminApi.getLogs();
-      setLogs(prev => {
-        if (JSON.stringify(prev) !== JSON.stringify(lData)) {
-          return lData;
-        }
-        return prev;
-      });
-    } catch (err) { }
-  };
-
-  const handleUpdateProfile = async () => {
+  const handleSave = async () => {
     setIsSaving(true);
     try {
-      await adminApi.updateAdminProfile(displayName);
-      await refreshAdmin();
-      toast.success("Profil mis à jour");
+      await adminApi.updateSettings(settings);
+      toast.success("Configurations sauvegardées");
     } catch (err) {
-      toast.error("Échec de la mise à jour");
+      toast.error("Erreur lors de la sauvegarde");
     } finally {
       setIsSaving(false);
     }
   };
 
-  const toggleSetting = async (key, currentValue) => {
-    const newValue = currentValue === 'true' ? 'false' : 'true';
-    try {
-      await adminApi.updateSetting(key, newValue);
-      setSettings(prev => ({ ...prev, [key]: newValue }));
-      toast.success("Configuration mise à jour");
-      loadLogs();
-    } catch (err) {
-      toast.error("Erreur serveur");
-    }
+  const updateField = (section, field, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        [field]: value
+      }
+    }));
   };
 
-  const filteredLogs = logs.filter(l =>
-    l.action.toLowerCase().includes(logSearch.toLowerCase()) ||
-    l.details.toLowerCase().includes(logSearch.toLowerCase())
+  if (loading) return (
+    <AdminLayout>
+      <div className="flex h-[70vh] items-center justify-center">
+        <RefreshCw className="animate-spin text-blue-500" size={40} />
+      </div>
+    </AdminLayout>
   );
 
   return (
     <AdminLayout>
-      <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3">
-            <SettingsIcon className="text-blue-500" size={32} />
-            Centre de Configuration
-          </h1>
-          <p className="text-slate-400 mt-2 font-medium italic">Accès direct aux variables d'environnement et à la traçabilité système.</p>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl px-5 py-3 flex items-center gap-3 shadow-xl backdrop-blur-md">
-            <div className="relative">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+      <div className="max-w-7xl mx-auto pb-20">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest mb-4">
+              <ShieldCheck size={12} /> Console de Configuration
             </div>
-            <span className="text-xs font-black text-slate-300 uppercase tracking-widest leading-none">Cœur de Système Actif</span>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-800 dark:text-white tracking-tighter">
+              Paramètres <span className="text-blue-500 italic">Système</span>
+            </h1>
+            <p className="text-slate-500 font-bold uppercase text-[10px] tracking-[0.2em] mt-3">Éditez les variables critiques de votre écosystème</p>
           </div>
           <button
-            onClick={() => setShowLogs(true)}
-            className="p-3 bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 rounded-2xl transition-all shadow-xl group"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center gap-3 shadow-2xl shadow-blue-500/20 hover:scale-105 active:scale-95 disabled:opacity-50"
           >
-            <Terminal size={22} className="group-hover:scale-110 transition-transform" />
+            {isSaving ? <RefreshCw className="animate-spin" size={18} /> : <><Save size={18} /> Enregistrer</>}
           </button>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-        {/* Left Column: Admin Profile */}
-        <div className="xl:col-span-4 space-y-8">
-          <section className="bg-slate-900/40 backdrop-blur-md border border-slate-800 rounded-[2.5rem] p-8 space-y-8 shadow-2xl relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-10 -mt-10" />
-
-            <div className="relative flex flex-col items-center">
-              <div className="w-32 h-32 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[2.5rem] p-1 shadow-2xl mb-6 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-slate-900 rounded-[2.2rem] flex items-center justify-center text-white text-5xl font-black italic">
-                  {admin?.displayName?.[0] || 'A'}
-                </div>
-              </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tighter">Panel d'Identité</h3>
-              <div className="px-3 py-1 bg-blue-500/10 text-blue-500 rounded-full text-[10px] font-black uppercase mt-2 border border-blue-500/20">Super-Admin</div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nom d'usage public</label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={e => setDisplayName(e.target.value)}
-                    className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-white font-bold focus:outline-none focus:border-blue-500/50 transition-all shadow-inner"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Connecteur Firebase</label>
-                <div className="w-full bg-slate-950/20 border border-slate-800/50 rounded-2xl py-3 px-5 text-sm font-bold text-slate-600 select-none">
-                  {admin?.email}
-                </div>
-              </div>
-
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Navigation Sidebar */}
+          <div className="lg:col-span-3 space-y-2">
+            {SECTIONS.map(s => (
               <button
-                onClick={handleUpdateProfile}
-                disabled={isSaving}
-                className="w-full py-4 bg-white text-slate-950 hover:bg-blue-600 hover:text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 shadow-2xl active:scale-95 disabled:opacity-50"
+                key={s.id}
+                onClick={() => setActiveSection(s.id)}
+                className={`w-full flex items-center gap-4 p-5 rounded-[2rem] transition-all text-left group ${activeSection === s.id
+                  ? "bg-white dark:bg-slate-900 shadow-xl border border-slate-200 dark:border-slate-800"
+                  : "hover:bg-slate-50 dark:hover:bg-white/5 opacity-60 hover:opacity-100"
+                  }`}
               >
-                {isSaving ? <RefreshCw className="animate-spin" size={18} /> : <><Save size={18} /> Sync Profil</>}
+                <div className={`p-3 rounded-2xl ${activeSection === s.id ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 group-hover:text-blue-500'} transition-all`}>
+                  <s.icon size={20} />
+                </div>
+                <div className="flex-1">
+                  <p className={`text-sm font-black uppercase tracking-tight ${activeSection === s.id ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>{s.label}</p>
+                  <p className="text-[10px] text-slate-400 font-medium truncate">{s.desc}</p>
+                </div>
+                {activeSection === s.id && <ChevronRight size={16} className="text-slate-300" />}
               </button>
-            </div>
-          </section>
-
-          {/* Status Mini Card */}
-          <div className="bg-slate-900/20 border border-slate-800 rounded-[2rem] p-6 flex items-center justify-between group overflow-hidden relative">
-            <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500"><Bell size={24} /></div>
-              <div>
-                <p className="text-xs font-black text-white uppercase">Alerte IA</p>
-                <p className="text-[10px] text-slate-500 font-medium">Gemini Pro 1.5 Actif</p>
-              </div>
-            </div>
-            <Activity className="text-slate-800 group-hover:text-blue-500/50 transition-colors relative z-10" size={32} />
-          </div>
-        </div>
-
-        {/* Right Column: System Toggles */}
-        <div className="xl:col-span-8 space-y-8">
-          <div className="space-y-4">
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] ml-2 flex items-center gap-2">
-              <Shield size={14} className="text-blue-500" /> Protocoles de Sécurité
-            </h2>
-            <SettingItem
-              icon={Lock}
-              title="Force MFA"
-              desc="Exiger la validation double-facteur pour tout accès au panel admin."
-              actionLabel={settings.MFA_FORCED === 'true' ? "Activé" : "Désactivé"}
-              active={settings.MFA_FORCED === 'true'}
-              onClick={() => toggleSetting('MFA_FORCED', settings.MFA_FORCED)}
-            />
-            <SettingItem
-              icon={Activity}
-              title="Live Logs Audit"
-              desc="Ouvrir le moniteur de traçabilité en temps réel (Historique SQL)."
-              actionLabel="Lancer"
-              onClick={() => setShowLogs(true)}
-            />
+            ))}
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-2xs font-black text-slate-500 uppercase tracking-[0.3em] ml-2 flex items-center gap-2">
-              <Database size={14} className="text-indigo-500" /> Infrastructure Node/Oracle
-            </h2>
-            <SettingItem
-              icon={Monitor}
-              title="Maintenance Globale"
-              desc="Verrouiller l'accès Students/Companies pour les mises à jour structurelles."
-              actionLabel={settings.MAINTENANCE_MODE === 'true' ? "DÉSFACTIVER" : "ACTIVER"}
-              active={settings.MAINTENANCE_MODE === 'true'}
-              onClick={() => toggleSetting('MAINTENANCE_MODE', settings.MAINTENANCE_MODE)}
-            />
+          {/* Main Content Area */}
+          <div className="lg:col-span-9">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white dark:bg-slate-900/50 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
+                  {React.createElement(SECTIONS.find(s => s.id === activeSection).icon, { size: 160 })}
+                </div>
+
+                {activeSection === 'general' && (
+                  <div className="space-y-10 relative z-10">
+                    <SectionHeader title="Branding & Identité" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                      <Input
+                        label="Nom de la Plateforme"
+                        value={settings.general.platformName}
+                        onChange={v => updateField('general', 'platformName', v)}
+                        placeholder="Ex: InternFlow"
+                      />
+                      <Input
+                        label="Nom de la Promotion"
+                        value={settings.general.promoName}
+                        onChange={v => updateField('general', 'promoName', v)}
+                        placeholder="Ex: Promo 2026"
+                      />
+                      <Input
+                        label="Email de Contact"
+                        icon={Mail}
+                        value={settings.general.contactEmail}
+                        onChange={v => updateField('general', 'contactEmail', v)}
+                        placeholder="admin@domain.com"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'workflow' && (
+                  <div className="space-y-10 relative z-10">
+                    <SectionHeader title="Paramétrage de l'Algorithme" />
+                    <div className="grid grid-cols-1 gap-12">
+                      <div className="space-y-6">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex justify-between">
+                          <span>Seuil de Rétention Automatique</span>
+                          <span className="text-blue-500 bg-blue-500/10 px-2 rounded">{settings.workflow.retentionThreshold}%</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={settings.workflow.retentionThreshold}
+                          onChange={e => updateField('workflow', 'retentionThreshold', parseInt(e.target.value))}
+                          className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        />
+                        <p className="text-[10px] text-slate-400 italic font-medium">Les candidats ayant un score supérieur à ce seuil seront marqués "Retenus" par le système.</p>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Durée Slot Entretien (min)</label>
+                          <select
+                            value={settings.workflow.interviewSlotDuration}
+                            onChange={e => updateField('workflow', 'interviewSlotDuration', parseInt(e.target.value))}
+                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 ring-blue-500/20 appearance-none"
+                          >
+                            {[15, 30, 45, 60, 90].map(d => <option key={d} value={d}>{d} Minutes</option>)}
+                          </select>
+                        </div>
+                        <Input
+                          label="Candidatures Max / Étudiant"
+                          type="number"
+                          value={settings.workflow.maxApplicationsPerStudent}
+                          onChange={v => updateField('workflow', 'maxApplicationsPerStudent', parseInt(v))}
+                        />
+                      </div>
+
+                      <Toggle
+                        title="Auto-Approbation Entreprises"
+                        desc="Valider automatiquement les entreprises avec un profil complet dès l'inscription."
+                        active={settings.workflow.autoApproveCompanies}
+                        onToggle={() => updateField('workflow', 'autoApproveCompanies', !settings.workflow.autoApproveCompanies)}
+                      />
+
+                      <Toggle
+                        title="Validation par les Entreprises"
+                        desc="Si désactivé, le système planifie automatiquement les entretiens dès la candidature."
+                        active={settings.workflow.validationEnabled}
+                        onToggle={() => updateField('workflow', 'validationEnabled', !settings.workflow.validationEnabled)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'team' && (
+                  <div className="space-y-10 relative z-10">
+                    <SectionHeader title="Rôles & Accessibilité" />
+                    <div className="space-y-6">
+                      <Toggle
+                        title="Shadowing Session"
+                        desc="Autoriser les administrateurs juniors à observer les entretiens sans pouvoir noter."
+                        active={settings.team.allowShadowing}
+                        onToggle={() => updateField('team', 'allowShadowing', !settings.team.allowShadowing)}
+                      />
+                      <Toggle
+                        title="Transparence des Notes"
+                        desc="Permettre aux entreprises de consulter les évaluations administratives des candidats."
+                        active={settings.team.visibleEvaluations}
+                        onToggle={() => updateField('team', 'visibleEvaluations', !settings.team.visibleEvaluations)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {activeSection === 'notifications' && (
+                  <div className="space-y-10 relative z-10">
+                    <SectionHeader title="Système d'Alertes Mail" />
+                    <div className="space-y-6">
+                      <Toggle
+                        icon={Mail}
+                        title="Étudiants : Changement de Statut"
+                        desc="Notifier l'étudiant dès qu'il est 'Retenu' ou que son entretien est planifié."
+                        active={settings.notifications.emailStudentOnStatusChange}
+                        onToggle={() => updateField('notifications', 'emailStudentOnStatusChange', !settings.notifications.emailStudentOnStatusChange)}
+                      />
+                      <Toggle
+                        icon={Zap}
+                        title="Admin : Nouvelles Inscriptions"
+                        desc="Alerte instantanée lors de l'inscription d'un nouvel étudiant qualifié."
+                        active={settings.notifications.emailAdminOnNewRegistration}
+                        onToggle={() => updateField('notifications', 'emailAdminOnNewRegistration', !settings.notifications.emailAdminOnNewRegistration)}
+                      />
+                      <Toggle
+                        icon={Globe}
+                        title="Entreprises : Nouvelles Candidatures"
+                        desc="Notifier les entreprises dès qu'un candidat postule à leurs offres."
+                        active={settings.notifications.emailCompanyOnNewApplication}
+                        onToggle={() => updateField('notifications', 'emailCompanyOnNewApplication', !settings.notifications.emailCompanyOnNewApplication)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </div>
-
-
-      {/* Real-time Logs Modal */}
-      < AnimatePresence >
-        {showLogs && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowLogs(false)}
-              className="absolute inset-0 bg-[#020617]/95 backdrop-blur-xl"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 50 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 50 }}
-              className="bg-slate-900 border border-slate-800 w-full max-w-5xl rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
-            >
-              <div className="bg-slate-950 p-4 sm:p-6 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-500"><Terminal size={24} /></div>
-                  <div>
-                    <h2 className="text-xl font-black text-white italic tracking-tight">Audit_Logger.exe</h2>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Traçabilité des Commandes Administrateur</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-blue-500 transition-colors" size={16} />
-                    <input
-                      type="text"
-                      placeholder="Filtrer les logs..."
-                      value={logSearch}
-                      onChange={e => setLogSearch(e.target.value)}
-                      className="bg-slate-900 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none focus:border-blue-500/50"
-                    />
-                  </div>
-                  <button onClick={() => setShowLogs(false)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors text-slate-500">
-                    <XCircle size={24} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex-1 p-6 overflow-y-auto custom-scrollbar bg-slate-950/20">
-                <div className="space-y-px font-mono text-[11px]">
-                  {filteredLogs.length === 0 ? (
-                    <div className="py-20 text-center text-slate-700 font-bold uppercase tracking-widest italic">Aucune entrée détectée dans le buffer.</div>
-                  ) : (
-                    filteredLogs.map(log => (
-                      <div key={log.id} className="p-4 bg-slate-950/40 border-b border-slate-800/10 flex gap-6 items-start hover:bg-slate-900/50 transition-colors group">
-                        <span className="text-blue-500 shrink-0 select-none font-mono text-[10px] pt-1">[{new Date(log.createdAt).toLocaleTimeString()}]</span>
-
-                        <div className="shrink-0 w-32">
-                          <span className={`px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${log.action.includes('DELETE') ? 'bg-red-500/10 text-red-500' :
-                            log.action.includes('UPDATE') ? 'bg-amber-500/10 text-amber-500' :
-                              log.action.includes('NEW') ? 'bg-emerald-500/10 text-emerald-500' :
-                                'bg-blue-500/10 text-blue-500'
-                            }`}>
-                            {log.action.replace(/_/g, ' ')}
-                          </span>
-                        </div>
-
-                        <div className="flex-1 flex flex-col gap-1">
-                          <div className="flex items-center gap-2 text-slate-400">
-                            <span className="text-slate-600 font-bold text-[9px] uppercase tracking-widest">BY</span>
-                            <span className="text-slate-300 font-bold">{log.adminId}</span>
-                          </div>
-
-                          <div className="mt-1">
-                            {typeof log.details === 'object' && log.details !== null ? (
-                              <div className="flex flex-wrap gap-2">
-                                {Object.entries(log.details).map(([k, v]) => (
-                                  <div key={k} className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-900 border border-slate-800 text-[10px]">
-                                    <span className="text-slate-500 mr-1.5 uppercase tracking-wide">{k}</span>
-                                    <span className="text-indigo-300 font-mono truncate max-w-[200px]" title={String(v)}>
-                                      {String(v)}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-indigo-300 italic">{String(log.details)}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[10px] font-black text-slate-600 uppercase tracking-widest">
-                <div className="flex items-center gap-4">
-                  <span>Status: Operational</span>
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                </div>
-                <span>Total Logs: {logs.length}</span>
-              </div>
-            </motion.div>
-          </div>
-        )
-        }
-      </AnimatePresence >
-    </AdminLayout >
+    </AdminLayout>
   );
 }
 
-function SettingItem({ icon: Icon, title, desc, actionLabel, active, onClick }) {
+function SectionHeader({ title }) {
   return (
-    <div className="bg-slate-900/40 border border-slate-800 rounded-2xl p-6 flex items-start justify-between gap-4 group hover:bg-slate-900/60 transition-colors">
-      <div className="flex gap-4">
-        <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 group-hover:text-blue-500 group-hover:border-blue-500/30 transition-all">
-          <Icon size={20} />
-        </div>
+    <div className="flex items-center gap-4 mb-2">
+      <div className="w-1 h-8 bg-blue-500 rounded-full" />
+      <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">{title}</h3>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, placeholder, type = "text", icon: Icon }) {
+  return (
+    <div className="space-y-3">
+      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">{label}</label>
+      <div className="relative">
+        {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />}
+        <input
+          type={type}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl py-4 pr-6 font-bold text-slate-800 dark:text-white focus:outline-none focus:ring-2 ring-blue-500/20 transition-all ${Icon ? 'pl-12' : 'pl-6'}`}
+        />
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ title, desc, active, onToggle, icon: Icon }) {
+  return (
+    <div className="p-6 bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-3xl flex items-center justify-between group hover:border-blue-500/30 transition-all">
+      <div className="flex items-center gap-4">
+        {Icon && (
+          <div className="p-3 bg-white dark:bg-slate-900 rounded-2xl text-slate-400 group-hover:text-blue-500 transition-colors">
+            <Icon size={20} />
+          </div>
+        )}
         <div>
-          <h3 className="text-sm font-bold text-white mb-1">{title}</h3>
-          <p className="text-xs text-slate-400 leading-relaxed max-w-sm">{desc}</p>
+          <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">{title}</h4>
+          <p className="text-[10px] text-slate-500 font-medium max-w-md mt-1">{desc}</p>
         </div>
       </div>
-
       <button
-        onClick={onClick}
-        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border shrink-0 ${active
-          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500 hover:text-white"
-          : "bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-white"
-          }`}
+        onClick={onToggle}
+        className={`w-12 h-6 rounded-full relative transition-all shadow-inner ${active ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-800'}`}
       >
-        {actionLabel}
+        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-md ${active ? 'left-7' : 'left-1'}`} />
       </button>
     </div>
   );

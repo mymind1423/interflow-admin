@@ -6,7 +6,7 @@ export default function AdminLayout({ children }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="flex bg-[#020617] min-h-screen text-slate-200">
+        <div className="flex bg-slate-50 dark:bg-[#020617] min-h-screen text-slate-900 dark:text-slate-200 transition-colors duration-300">
             {/* Sidebar - Pass state/toggle for mobile */}
             <AdminSidebar
                 isOpen={isSidebarOpen}

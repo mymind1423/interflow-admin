@@ -226,12 +226,12 @@ export default function AdminPlanning() {
                     <motion.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3"
+                        className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-3"
                     >
                         <CalendarDays className="text-emerald-500" size={36} />
                         Planning & Entretiens
                     </motion.h1>
-                    <p className="text-slate-400 mt-2 font-medium">Coordination logistique de toutes les rencontres InternFlow</p>
+                    <p className="text-slate-600 dark:text-slate-400 mt-2 font-medium">Coordination logistique de toutes les rencontres InternFlow</p>
                 </div>
 
                 <div className="flex gap-4">
@@ -241,29 +241,29 @@ export default function AdminPlanning() {
             </div>
 
             {/* Control Bar - Redesigned to 2 Rows to fix overlapping */}
-            <div className="flex flex-col gap-4 bg-slate-900/20 p-6 rounded-3xl border border-slate-800/50 backdrop-blur-sm">
+            <div className="flex flex-col gap-4 bg-white dark:bg-slate-900/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/50 backdrop-blur-sm shadow-sm dark:shadow-none">
 
                 {/* Row 1: Period & Search */}
                 <div className="flex flex-col xl:flex-row gap-4 justify-between items-center">
-                    <div className="flex bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800/50 shrink-0 w-full xl:w-auto overflow-x-auto no-scrollbar">
+                    <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50 shrink-0 w-full xl:w-auto overflow-x-auto no-scrollbar">
                         <TabButton active={activeTab === 'today'} onClick={() => setActiveTab('today')} label="Aujourd'hui" icon={Clock} />
                         <TabButton active={activeTab === 'upcoming'} onClick={() => setActiveTab('upcoming')} label="Prochainement" icon={Calendar} />
                         <TabButton active={activeTab === 'past'} onClick={() => setActiveTab('past')} label="Archives" icon={History} />
                     </div>
 
                     <div className="relative group w-full xl:max-w-md">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors" size={20} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" size={20} />
                         <input
                             type="text"
                             placeholder="Rechercher un étudiant, une entreprise..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500/50 transition-all font-medium"
+                            className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500/50 transition-all font-medium"
                         />
                     </div>
                 </div>
 
-                <div className="h-px bg-slate-800/50 w-full"></div>
+                <div className="h-px bg-slate-200 dark:bg-slate-800/50 w-full"></div>
 
                 {/* Row 2: Filters, Grouping, Exports */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-center">
@@ -273,7 +273,7 @@ export default function AdminPlanning() {
                         <select
                             value={filterCompany}
                             onChange={(e) => setFilterCompany(e.target.value)}
-                            className="flex-1 bg-slate-950/50 border border-slate-800 rounded-xl py-2.5 px-4 text-white appearance-none focus:outline-none focus:border-emerald-500/50 transition-all font-medium cursor-pointer text-xs"
+                            className="flex-1 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-slate-700 dark:text-white appearance-none focus:outline-none focus:border-emerald-500/50 transition-all font-medium cursor-pointer text-xs"
                         >
                             <option value="">Toute Entreprise</option>
                             {companies.map(c => <option key={c} value={c}>{c}</option>)}
@@ -281,7 +281,7 @@ export default function AdminPlanning() {
                         <select
                             value={filterDate}
                             onChange={(e) => setFilterDate(e.target.value)}
-                            className="flex-1 bg-slate-950/50 border border-slate-800 rounded-xl py-2.5 px-4 text-white appearance-none focus:outline-none focus:border-emerald-500/50 transition-all font-medium cursor-pointer text-xs"
+                            className="flex-1 bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-xl py-2.5 px-4 text-slate-700 dark:text-white appearance-none focus:outline-none focus:border-emerald-500/50 transition-all font-medium cursor-pointer text-xs"
                         >
                             <option value="">Toute Date</option>
                             {uniqueDays.map(d => (
@@ -294,24 +294,24 @@ export default function AdminPlanning() {
 
                     {/* Grouping */}
                     <div className="xl:col-span-4 flex justify-center">
-                        <div className="flex bg-slate-950/50 p-1 rounded-xl border border-slate-800/50">
+                        <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1 rounded-xl border border-slate-200 dark:border-slate-800/50">
                             <button
                                 onClick={() => setGroupBy('none')}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'none' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'none' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Liste simple"
                             >
                                 <LayoutList size={16} /> Liste
                             </button>
                             <button
                                 onClick={() => setGroupBy('date')}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'date' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'date' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Par Jour"
                             >
                                 <Calendar size={16} /> Par Jour
                             </button>
                             <button
                                 onClick={() => setGroupBy('company')}
-                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'company' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${groupBy === 'company' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                                 title="Par Entreprise"
                             >
                                 <Building size={16} /> Par Boite
@@ -342,7 +342,7 @@ export default function AdminPlanning() {
                 {loading ? (
                     <SkeletonTable />
                 ) : filteredInterviews.length === 0 ? (
-                    <div className="text-center py-24 bg-slate-900/20 rounded-[2.5rem] border-2 border-dashed border-slate-800 text-slate-500 font-bold">
+                    <div className="text-center py-24 bg-white dark:bg-slate-900/20 rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-bold">
                         Aucun entretien correspondant.
                     </div>
                 ) : (
@@ -390,17 +390,17 @@ function PlanningGroup({ title, items, idx, isGrouped, onRemind, remindingId }) 
                 className="flex items-center gap-4 px-2 cursor-pointer group select-none"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-500/20 text-emerald-500">
+                <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl flex items-center justify-center border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-500">
                     <Layers size={20} />
                 </div>
-                <h2 className="text-2xl font-black text-white tracking-tight group-hover:text-emerald-400 transition-colors capitalize">
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors capitalize">
                     {title}
                 </h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent"></div>
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800">
+                <div className="h-px flex-1 bg-gradient-to-r from-slate-200 dark:from-slate-800 to-transparent"></div>
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest bg-slate-100 dark:bg-slate-900/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800">
                     {items.length} RDV
                 </span>
-                <div className={`p-2 rounded-full bg-slate-900 border border-slate-800 transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
+                <div className={`p-2 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
                     <ChevronRight size={20} className="text-slate-400" />
                 </div>
             </div>
@@ -431,25 +431,25 @@ function InterviewRow({ item, onRemind, delay, remindingId }) {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: delay * 0.05 }}
-            className={`group bg-slate-900/40 border border-slate-800/60 rounded-[2rem] p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:bg-slate-900 transition-all border-l-4 ${isToday ? 'border-l-emerald-500' : 'border-l-transparent hover:border-l-emerald-500'}`}
+            className={`group bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800/60 rounded-[2rem] p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 hover:border-emerald-200 dark:hover:bg-slate-900 shadow-sm dark:shadow-none transition-all border-l-4 ${isToday ? 'border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-500/5' : 'border-l-transparent hover:border-l-emerald-500'}`}
         >
             <div className="flex items-center gap-6">
                 {/* Date Square */}
-                <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border shadow-xl shrink-0 group-hover:scale-105 transition-transform ${isToday ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-slate-950 text-slate-400 border-slate-800'}`}>
-                    <span className="text-[10px] font-black uppercase tracking-widest">{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
+                <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border shadow-xl shrink-0 group-hover:scale-105 transition-transform ${isToday ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20' : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'}`}>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
                     <span className="text-2xl font-black">{new Date(item.date).getDate()}</span>
                 </div>
 
                 <div className="space-y-1">
                     <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-black text-white">{item.title}</h3>
-                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' :
-                            'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                        <h3 className="text-xl font-black text-slate-800 dark:text-white">{item.title}</h3>
+                        <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${item.status === 'COMPLETED' ? 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border border-emerald-200 dark:border-emerald-500/20' :
+                            'bg-blue-100 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500 border border-blue-200 dark:border-blue-500/20'
                             }`}>
                             {item.status}
                         </span>
                     </div>
-                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400 font-medium">
+                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500 dark:text-slate-400 font-medium">
                         <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500" /> {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1.5"><Building size={14} className="text-indigo-500" /> {item.company}</span>
                         <span className="flex items-center gap-1.5"><User size={14} className="text-purple-500" /> {item.student} {item.studentDateOfBirth ? `(${calculateAge(item.studentDateOfBirth)} ans)` : ""}</span>
@@ -461,7 +461,7 @@ function InterviewRow({ item, onRemind, delay, remindingId }) {
                 <button
                     onClick={onRemind}
                     disabled={remindingId === item.id}
-                    className="p-3 bg-slate-800 text-slate-400 hover:bg-emerald-500/10 hover:text-emerald-500 rounded-xl transition-all border border-transparent hover:border-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-3 bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/10 hover:text-emerald-600 dark:hover:text-emerald-500 rounded-xl transition-all border border-transparent hover:border-emerald-200 dark:hover:border-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Envoyer rappel"
                 >
                     {remindingId === item.id ? <Loader2 size={20} className="animate-spin" /> : <Bell size={20} />}
@@ -478,20 +478,20 @@ function InterviewRow({ item, onRemind, delay, remindingId }) {
                     </a>
                 ) : (
                     <div className="flex flex-col items-end">
-                        <div className="px-5 py-3 bg-slate-900/80 text-slate-300 rounded-2xl border border-slate-700/50 flex items-start gap-4 text-right shadow-xl">
+                        <div className="px-5 py-3 bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-2xl border border-slate-200 dark:border-slate-700/50 flex items-start gap-4 text-right shadow-sm dark:shadow-xl">
                             <span className="flex flex-col gap-0.5">
-                                <span className="text-sm font-black text-white uppercase tracking-widest leading-none mb-1">
+                                <span className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest leading-none mb-1">
                                     {formatLocation(item.meetLink, item.room).split(' - ')[0]}
                                 </span>
-                                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide">
+                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
                                     {formatLocation(item.meetLink, item.room).split(' - ')[1]?.split(',')[0]}
                                 </span>
-                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">
+                                <span className="text-[9px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest">
                                     {formatLocation(item.meetLink, item.room).split(',')[1]?.trim()}
                                 </span>
                             </span>
                             <div className="p-2 bg-emerald-500/10 rounded-full border border-emerald-500/20 mt-1">
-                                <MapPin size={16} className="text-emerald-500 shrink-0" />
+                                <MapPin size={16} className="text-emerald-600 dark:text-emerald-500 shrink-0" />
                             </div>
                         </div>
                     </div>
@@ -505,7 +505,7 @@ function TabButton({ active, onClick, label, icon: Icon }) {
     return (
         <button
             onClick={onClick}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${active ? "bg-white text-slate-950 shadow-xl" : "text-slate-500 hover:text-white"
+            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${active ? "bg-white dark:bg-slate-800 text-slate-950 dark:text-white shadow-xl dark:shadow-none border border-transparent dark:border-slate-700" : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                 }`}
         >
             <Icon size={14} />
@@ -516,11 +516,11 @@ function TabButton({ active, onClick, label, icon: Icon }) {
 
 function StatCircle({ label, value, color }) {
     const colors = {
-        emerald: "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
-        indigo: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20"
+        emerald: "text-emerald-600 dark:text-emerald-500 bg-white dark:bg-emerald-500/10 border-slate-200 dark:border-emerald-500/20 shadow-sm",
+        indigo: "text-indigo-600 dark:text-indigo-500 bg-white dark:bg-indigo-500/10 border-slate-200 dark:border-indigo-500/20 shadow-sm"
     };
     return (
-        <div className={`px-6 py-3 rounded-2xl border ${colors[color]} flex items-center gap-4 bg-slate-900/40 backdrop-blur-md shadow-xl`}>
+        <div className={`px-6 py-3 rounded-2xl border flex items-center gap-4 dark:bg-slate-900/40 backdrop-blur-md ${colors[color]}`}>
             <div className="text-2xl font-black">{value}</div>
             <div className="text-[10px] font-black uppercase tracking-widest leading-tight w-20 opacity-70">{label}</div>
         </div>

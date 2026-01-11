@@ -177,11 +177,11 @@ export default function AdminStudents() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight flex items-center gap-3">
-                        <User className="text-indigo-500" size={36} />
+                    <h1 className="text-3xl sm:text-4xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-3">
+                        <User className="text-indigo-600 dark:text-indigo-500" size={36} />
                         Gestion Étudiants
                     </h1>
-                    <p className="text-slate-400 mt-2 font-medium">Contrôle et suivi des futurs talents d'InternFlow</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Contrôle et suivi des futurs talents d'InternFlow</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -195,17 +195,17 @@ export default function AdminStudents() {
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-end bg-slate-900/20 p-6 rounded-3xl border border-slate-800/50 backdrop-blur-sm">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-end bg-white dark:bg-slate-900/20 p-6 rounded-3xl border border-slate-200 dark:border-slate-800/50 backdrop-blur-sm shadow-sm dark:shadow-none">
                 <div className="xl:col-span-4 space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">Recherche globale</label>
                     <div className="relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={20} />
                         <input
                             type="text"
                             placeholder="Nom, email, domaine..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium"
+                            className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 pl-12 pr-4 text-slate-800 dark:text-white focus:outline-none focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-medium placeholder:text-slate-400 dark:placeholder:text-slate-600"
                         />
                     </div>
                 </div>
@@ -217,7 +217,7 @@ export default function AdminStudents() {
                             <select
                                 value={filterDomain}
                                 onChange={(e) => setFilterDomain(e.target.value)}
-                                className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-indigo-500/50 transition-all font-medium cursor-pointer text-sm"
+                                className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 px-4 text-slate-700 dark:text-white appearance-none focus:outline-none focus:border-indigo-500/50 transition-all font-medium cursor-pointer text-sm"
                             >
                                 <option value="">Domaine</option>
                                 {domains.map(d => <option key={d} value={d}>{d}</option>)}
@@ -227,7 +227,7 @@ export default function AdminStudents() {
                             <select
                                 value={filterGrade}
                                 onChange={(e) => setFilterGrade(e.target.value)}
-                                className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl py-3 px-4 text-white appearance-none focus:outline-none focus:border-indigo-500/50 transition-all font-medium cursor-pointer text-sm"
+                                className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 rounded-2xl py-3 px-4 text-slate-700 dark:text-white appearance-none focus:outline-none focus:border-indigo-500/50 transition-all font-medium cursor-pointer text-sm"
                             >
                                 <option value="">Niveau</option>
                                 {grades.map(g => <option key={g} value={g}>{g}</option>)}
@@ -238,22 +238,22 @@ export default function AdminStudents() {
 
                 <div className="xl:col-span-5 space-y-2">
                     <label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">Vue & Groupement</label>
-                    <div className="flex bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800/50">
+                    <div className="flex bg-slate-50 dark:bg-slate-950/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50">
                         <button
                             onClick={() => setGroupBy('none')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'none' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'none' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <LayoutList size={14} /> Liste
                         </button>
                         <button
                             onClick={() => setGroupBy('grade')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'grade' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'grade' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <Layers size={14} /> Par Niveau
                         </button>
                         <button
                             onClick={() => setGroupBy('domaine')}
-                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'domaine' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${groupBy === 'domaine' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <Briefcase size={14} /> Par Domaine
                         </button>
@@ -311,21 +311,21 @@ export default function AdminStudents() {
                             initial={{ opacity: 0, scale: 0.9, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                            className="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh] h-full md:h-auto"
+                            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-4xl rounded-[2.5rem] shadow-2xl relative overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh] h-full md:h-auto"
                         >
                             {/* Left Side: Profile Sidebar */}
-                            <div className="w-full md:w-80 bg-slate-950/50 border-r border-slate-800 p-6 sm:p-8 flex flex-col items-center overflow-y-auto md:overflow-visible shrink-0">
-                                <div className="w-32 h-32 bg-slate-900 rounded-[2.5rem] border-4 border-slate-800 p-1 mb-6 relative group overflow-hidden">
+                            <div className="w-full md:w-80 bg-slate-50 dark:bg-slate-950/50 border-r border-slate-200 dark:border-slate-800 p-6 sm:p-8 flex flex-col items-center overflow-y-auto md:overflow-visible shrink-0">
+                                <div className="w-32 h-32 bg-white dark:bg-slate-900 rounded-[2.5rem] border-4 border-slate-200 dark:border-slate-800 p-1 mb-6 relative group overflow-hidden">
                                     {selectedStudent.photoUrl ? (
                                         <img src={selectedStudent.photoUrl} className="w-full h-full object-cover rounded-[2.2rem]" />
                                     ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-slate-700 bg-slate-900 rounded-[2.2rem]">
+                                        <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-700 bg-slate-100 dark:bg-slate-900 rounded-[2.2rem]">
                                             <User size={64} />
                                         </div>
                                     )}
                                 </div>
-                                <h2 className="text-xl font-black text-white text-center">{selectedStudent.fullname || selectedStudent.displayName}</h2>
-                                <p className="text-indigo-500 text-sm font-black uppercase tracking-widest mt-1">Étudiant</p>
+                                <h2 className="text-xl font-black text-slate-800 dark:text-white text-center">{selectedStudent.fullname || selectedStudent.displayName}</h2>
+                                <p className="text-indigo-600 dark:text-indigo-500 text-sm font-black uppercase tracking-widest mt-1">Étudiant</p>
 
                                 <div className="w-full mt-8 space-y-4">
                                     <DetailItem icon={Mail} label="Email" value={selectedStudent.email} />
@@ -339,9 +339,9 @@ export default function AdminStudents() {
                             </div>
 
                             {/* Right Side: Content Area */}
-                            <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-                                <div className="p-4 sm:p-8 pb-4 flex items-center justify-between border-b border-slate-800/30 shrink-0 gap-4 overflow-x-auto">
-                                    <div className="flex bg-slate-950/50 p-1.5 rounded-2xl border border-slate-800/50 shrink-0">
+                            <div className="flex-1 flex flex-col overflow-hidden min-h-0 bg-white dark:bg-slate-900">
+                                <div className="p-4 sm:p-8 pb-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800/30 shrink-0 gap-4 overflow-x-auto">
+                                    <div className="flex bg-slate-100 dark:bg-slate-950/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-800/50 shrink-0">
                                         <ModalTab
                                             active={detailTab === 'info'}
                                             onClick={() => setDetailTab('info')}
@@ -363,21 +363,21 @@ export default function AdminStudents() {
                                             count={studentInterviews.length}
                                         />
                                     </div>
-                                    <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-slate-800 rounded-xl text-slate-500 transition-colors">
+                                    <button onClick={() => setSelectedStudent(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
                                         <XCircle size={28} />
                                     </button>
                                 </div>
 
-                                <div className="flex-1 p-5 sm:p-8 overflow-y-auto custom-scrollbar bg-slate-900/10">
+                                <div className="flex-1 p-5 sm:p-8 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-slate-900/10">
                                     {loadingDetails ? (
                                         <div className="h-full flex flex-col items-center justify-center gap-4">
                                             <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                                            <p className="text-slate-500 font-black uppercase text-[10px] tracking-widest">Récupération des données...</p>
+                                            <p className="text-slate-400 dark:text-slate-500 font-black uppercase text-[10px] tracking-widest">Récupération des données...</p>
                                         </div>
                                     ) : detailTab === 'info' ? (
                                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                             <div>
-                                                <h3 className="text-lg font-black text-white mb-6 flex items-center gap-3">
+                                                <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-3">
                                                     <span className="w-1.5 h-6 bg-indigo-500 rounded-full"></span>
                                                     Aperçu Rapide
                                                 </h3>
@@ -390,22 +390,22 @@ export default function AdminStudents() {
                                     ) : detailTab === 'apps' ? (
                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                             {studentApps.length === 0 ? (
-                                                <div className="text-center py-20 bg-slate-950/20 rounded-3xl border-2 border-dashed border-slate-800">
-                                                    <Briefcase size={32} className="mx-auto text-slate-800 mb-4" />
-                                                    <p className="text-slate-500 font-bold">Aucune candidature pour le moment.</p>
+                                                <div className="text-center py-20 bg-white dark:bg-slate-950/20 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                                    <Briefcase size={32} className="mx-auto text-slate-300 dark:text-slate-800 mb-4" />
+                                                    <p className="text-slate-400 dark:text-slate-500 font-bold">Aucune candidature pour le moment.</p>
                                                 </div>
                                             ) : (
                                                 studentApps.map(app => (
-                                                    <div key={app.id} className="p-5 bg-slate-950 border border-slate-800 rounded-[1.5rem] flex items-center justify-between group hover:border-indigo-500/30 transition-all">
+                                                    <div key={app.id} className="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] flex items-center justify-between group hover:border-indigo-500/30 transition-all shadow-sm dark:shadow-none">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="p-3 bg-indigo-500/10 rounded-2xl text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all"><Briefcase size={20} /></div>
+                                                            <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl text-indigo-600 dark:text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all"><Briefcase size={20} /></div>
                                                             <div>
-                                                                <h4 className="font-black text-white">{app.jobTitle}</h4>
+                                                                <h4 className="font-black text-slate-800 dark:text-white">{app.jobTitle}</h4>
                                                                 <p className="text-xs text-slate-500 font-bold">{app.companyName} • {new Date(app.createdAt).toLocaleDateString()}</p>
                                                             </div>
                                                         </div>
-                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${app.status === 'ACCEPTED' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' :
-                                                            app.status === 'REJECTED' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+                                                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${app.status === 'ACCEPTED' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-200 dark:border-emerald-500/20' :
+                                                            app.status === 'REJECTED' ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-500 border-rose-200 dark:border-rose-500/20' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-200 dark:border-blue-500/20'
                                                             }`}>
                                                             {app.status}
                                                         </span>
@@ -416,22 +416,22 @@ export default function AdminStudents() {
                                     ) : (
                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                                             {studentInterviews.length === 0 ? (
-                                                <div className="text-center py-20 bg-slate-950/20 rounded-3xl border-2 border-dashed border-slate-800">
-                                                    <Calendar size={32} className="mx-auto text-slate-800 mb-4" />
-                                                    <p className="text-slate-500 font-bold">Aucun entretien programmé.</p>
+                                                <div className="text-center py-20 bg-white dark:bg-slate-950/20 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                                    <Calendar size={32} className="mx-auto text-slate-300 dark:text-slate-800 mb-4" />
+                                                    <p className="text-slate-400 dark:text-slate-500 font-bold">Aucun entretien programmé.</p>
                                                 </div>
                                             ) : (
                                                 studentInterviews.map(item => (
-                                                    <div key={item.id} className="p-5 bg-slate-950 border border-slate-800 rounded-[1.5rem] flex items-center justify-between group hover:border-rose-500/30 transition-all">
+                                                    <div key={item.id} className="p-5 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-[1.5rem] flex items-center justify-between group hover:border-rose-500/30 transition-all shadow-sm dark:shadow-none">
                                                         <div className="flex items-center gap-4">
-                                                            <div className="p-3 bg-rose-500/10 rounded-2xl text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all"><Calendar size={20} /></div>
+                                                            <div className="p-3 bg-rose-50 dark:bg-rose-500/10 rounded-2xl text-rose-600 dark:text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all"><Calendar size={20} /></div>
                                                             <div>
-                                                                <h4 className="font-black text-white">{item.title}</h4>
+                                                                <h4 className="font-black text-slate-800 dark:text-white">{item.title}</h4>
                                                                 <p className="text-xs text-slate-500 font-bold">{item.company} • {new Date(item.date).toLocaleString()}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
-                                                            <span className="px-3 py-1 bg-slate-900 text-slate-400 border border-slate-800 rounded-full text-[10px] font-black uppercase">{item.status}</span>
+                                                            <span className="px-3 py-1 bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 rounded-full text-[10px] font-black uppercase">{item.status}</span>
                                                             {item.meetLink && <a href={item.meetLink} target="_blank" rel="noreferrer" className="p-2 bg-blue-600 rounded-xl text-white shadow-lg"><ExternalLink size={14} /></a>}
                                                         </div>
                                                     </div>
@@ -484,17 +484,17 @@ function StudentGroup({ title, students, idx, isGrouped, onDetails, onDelete, de
                 className="flex items-center gap-4 px-2 cursor-pointer group select-none"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
-                <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-500/20 text-indigo-500">
+                <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-500">
                     <Layers size={20} />
                 </div>
-                <h2 className="text-2xl font-black text-white tracking-tight group-hover:text-indigo-400 transition-colors">
+                <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">
                     {title}
                 </h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-slate-800 to-transparent"></div>
-                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest bg-slate-900/50 px-3 py-1 rounded-full border border-slate-800">
+                <div className="h-px flex-1 bg-gradient-to-r from-slate-200 dark:from-slate-800 to-transparent"></div>
+                <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest bg-slate-100 dark:bg-slate-900/50 px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800">
                     {students.length} Étudiants
                 </span>
-                <div className={`p-2 rounded-full bg-slate-900 border border-slate-800 transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
+                <div className={`p-2 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition-transform duration-300 ${isExpanded ? 'rotate-90' : 'rotate-0'}`}>
                     <ChevronRight size={20} className="text-slate-400" />
                 </div>
             </div>
@@ -525,37 +525,35 @@ function StudentCard({ student, idx, onDetails, onDelete, deletingId }) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ delay: idx * 0.05 }}
-            className="group relative bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-[2rem] p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-slate-900 shadow-xl hover:shadow-indigo-500/5 transition-all border-l-4 border-l-transparent hover:border-l-indigo-500"
+            className="group relative bg-white dark:bg-slate-900/40 backdrop-blur-md border border-slate-200 dark:border-slate-800/60 rounded-[2rem] p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-indigo-200 dark:hover:bg-slate-900 shadow-sm dark:shadow-xl hover:shadow-md dark:hover:shadow-indigo-500/5 transition-all border-l-4 border-l-transparent hover:border-l-indigo-500"
         >
             <div className="flex items-center gap-6">
                 <div className="relative">
-                    <div className="w-16 h-16 bg-slate-950 rounded-2xl flex items-center justify-center p-0.5 border border-slate-800 shadow-inner group-hover:scale-105 transition-transform overflow-hidden">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-center p-0.5 border border-slate-200 dark:border-slate-800 shadow-inner group-hover:scale-105 transition-transform overflow-hidden">
                         {student.photoUrl ? (
                             <img src={student.photoUrl} alt={student.fullname} className="w-full h-full object-cover" />
                         ) : (
-                            <User size={32} className="text-slate-700" />
+                            <User size={32} className="text-slate-400 dark:text-slate-700" />
                         )}
                     </div>
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#020617] ${student.status === 'approved' ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
+                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-[#020617] ${student.status === 'approved' ? 'bg-emerald-500' : 'bg-orange-500'}`}></div>
                 </div>
                 <div>
-                    <h3 className="text-xl font-black text-white">{student.fullname || student.displayName}</h3>
+                    <h3 className="text-xl font-black text-slate-800 dark:text-white">{student.fullname || student.displayName}</h3>
                     <div className="flex flex-wrap gap-x-6 gap-y-1 mt-2">
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             <Mail size={14} className="text-blue-500" />
                             <span className="font-medium">{student.email}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
-
-                            <GraduationCap size={14} className="text-indigo-500" />
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             <GraduationCap size={14} className="text-indigo-500" />
                             <span className="font-medium">{student.domaine || 'N/A'} {student.grade ? `• ${student.grade}` : ''}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             <Briefcase size={14} className="text-emerald-500" />
                             <span className="font-medium">{student.applicationCount || 0} Cands.</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-400">
+                        <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                             <Calendar size={14} className="text-purple-500" />
                             <span className="font-medium">{student.interviewCount || 0} Entretiens</span>
                         </div>
@@ -575,7 +573,7 @@ function StudentCard({ student, idx, onDetails, onDelete, deletingId }) {
                         align="center"
                         onClick={() => onDelete(student)}
                         disabled={deletingId === student.id}
-                        className={`w-12 h-12 flex items-center justify-center bg-slate-800 text-slate-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-lg active:scale-90 ${deletingId === student.id ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-rose-500 hover:text-white rounded-xl transition-all shadow-sm dark:shadow-lg active:scale-90 ${deletingId === student.id ? 'opacity-70 cursor-not-allowed' : ''}`}
                     >
                         {deletingId === student.id ? <Loader2 size={20} className="animate-spin" /> : <Trash2 size={20} />}
                     </button>
@@ -588,12 +586,12 @@ function StudentCard({ student, idx, onDetails, onDelete, deletingId }) {
 function DetailItem({ icon: Icon, label, value }) {
     return (
         <div className="flex items-start gap-3 group">
-            <div className="mt-0.5 p-2 bg-slate-900 rounded-xl text-slate-500 group-hover:text-indigo-400 transition-colors">
+            <div className="mt-0.5 p-2 bg-slate-100 dark:bg-slate-900 rounded-xl text-slate-400 dark:text-slate-500 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors">
                 <Icon size={14} />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{label}</p>
-                <p className="text-xs font-bold text-slate-300 truncate">{value}</p>
+                <p className="text-[10px] font-black text-slate-500 dark:text-slate-600 uppercase tracking-widest">{label}</p>
+                <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{value}</p>
             </div>
         </div>
     );
@@ -607,7 +605,7 @@ function ModalTab({ active, onClick, label, icon: Icon, count }) {
     return (
         <button
             onClick={onClick}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all relative ${active ? "bg-slate-800 text-white shadow-xl" : "text-slate-500 hover:text-slate-300"
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all relative ${active ? "bg-slate-800 dark:bg-slate-800 text-white shadow-xl" : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-300"
                 }`}
         >
             <Icon size={14} />
@@ -617,31 +615,31 @@ function ModalTab({ active, onClick, label, icon: Icon, count }) {
                     {count}
                 </span>
             )}
-            {active && <motion.div layoutId="modal-active-tab" className="absolute inset-0 border border-white/5 rounded-xl" />}
+            {active && <motion.div layoutId="modal-active-tab" className="absolute inset-0 border border-white/10 dark:border-white/5 rounded-xl" />}
         </button>
     );
 }
 
 function DocPreview({ label, url, color }) {
-    const bgColor = color === 'blue' ? 'bg-blue-600/5' : 'bg-indigo-600/5';
-    const borderColor = color === 'blue' ? 'border-blue-500/20' : 'border-indigo-500/20';
-    const iconColor = color === 'blue' ? 'text-blue-500' : 'text-indigo-500';
+    const bgColor = color === 'blue' ? 'bg-blue-50 dark:bg-blue-600/5' : 'bg-indigo-50 dark:bg-indigo-600/5';
+    const borderColor = color === 'blue' ? 'border-blue-200 dark:border-blue-500/20' : 'border-indigo-200 dark:border-indigo-500/20';
+    const iconColor = color === 'blue' ? 'text-blue-600 dark:text-blue-500' : 'text-indigo-600 dark:text-indigo-500';
 
     return (
-        <div className={`p-6 ${bgColor} border ${borderColor} rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 group transition-all hover:bg-slate-900`}>
-            <div className={`w-16 h-16 ${iconColor} bg-slate-950 rounded-[1.5rem] flex items-center justify-center border border-white/5 shadow-2xl group-hover:scale-110 transition-transform`}>
+        <div className={`p-6 ${bgColor} border ${borderColor} rounded-[2rem] flex flex-col items-center justify-center text-center gap-4 group transition-all hover:bg-white dark:hover:bg-slate-900 shadow-sm`}>
+            <div className={`w-16 h-16 ${iconColor} bg-white dark:bg-slate-950 rounded-[1.5rem] flex items-center justify-center border border-slate-200 dark:border-white/5 shadow-inner dark:shadow-2xl group-hover:scale-110 transition-transform`}>
                 <FileText size={32} />
             </div>
             <div>
-                <h4 className="font-black text-white">{label}</h4>
+                <h4 className="font-black text-slate-800 dark:text-white">{label}</h4>
                 <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest px-2">Document Officiel</p>
             </div>
             {url ? (
-                <a href={url} target="_blank" rel="noreferrer" className={`mt-2 flex items-center gap-2 px-6 py-2 bg-white text-slate-950 rounded-xl text-xs font-black uppercase hover:bg-indigo-500 hover:text-white transition-all`}>
+                <a href={url} target="_blank" rel="noreferrer" className={`mt-2 flex items-center gap-2 px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-950 rounded-xl text-xs font-black uppercase hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white dark:hover:text-white transition-all`}>
                     Consulter
                 </a>
             ) : (
-                <span className="mt-2 text-[10px] font-black text-slate-700 uppercase italic">Non téléchargé</span>
+                <span className="mt-2 text-[10px] font-black text-slate-400 dark:text-slate-700 uppercase italic">Non téléchargé</span>
             )}
         </div>
     );

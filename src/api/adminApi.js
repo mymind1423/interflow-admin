@@ -3,6 +3,12 @@ import { apiFetch } from "./client";
 export const adminApi = {
   getProfile: () => apiFetch("/api/profile/get"),
   getStats: () => apiFetch("/api/admin/stats"),
+  getAnalyticsReport: () => apiFetch("/api/admin/analytics"),
+  getSettings: () => apiFetch("/api/admin/settings"),
+  updateSettings: (settings) => apiFetch("/api/admin/settings", {
+    method: "POST",
+    body: JSON.stringify(settings)
+  }),
   getStudents: () => apiFetch("/api/admin/students"),
   getCompanies: () => apiFetch("/api/admin/companies"),
   getJobs: () => apiFetch("/api/admin/jobs"),
@@ -25,5 +31,7 @@ export const adminApi = {
   getLiveManagerData: (params = {}) => {
     const query = new URLSearchParams(params).toString();
     return apiFetch(`/api/admin/live-manager?${query}`);
-  }
+  },
+  markNotificationRead: (id) => apiFetch(`/api/notifications/${id}/read`, { method: "PUT" }),
+  markAllNotificationsRead: () => apiFetch(`/api/notifications/read-all`, { method: "PUT" })
 };
