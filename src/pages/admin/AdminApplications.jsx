@@ -6,7 +6,7 @@ import { FileText, Search, Building2, User, Clock, CheckCircle, XCircle, Downloa
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import { SkeletonTable } from "../../components/common/Skeletons";
-import { calculateAge } from "../../utils/dateUtils";
+import { calculateAge, getUTCAsLocal } from "../../utils/dateUtils";
 
 export default function AdminApplications() {
     const [applications, setApplications] = useState([]);
@@ -49,7 +49,7 @@ export default function AdminApplications() {
             job: app.jobTitle,
             age: app.applicantDateOfBirth ? calculateAge(app.applicantDateOfBirth) : "",
             status: app.status === 'ACCEPTED' ? 'Acceptée' : app.status === 'REJECTED' ? 'Refusée' : 'En cours',
-            date: new Date(app.createdAt).toLocaleDateString()
+            date: new Date(getUTCAsLocal(app.createdAt)).toLocaleDateString()
         }));
 
         exportToExcel(`Candidatures_${new Date().toISOString().split('T')[0]}`, "Candidatures", columns, data, `Candidatures (${activeTab === 'all' ? 'Toutes' : activeTab})`);
@@ -207,7 +207,7 @@ export default function AdminApplications() {
                                                 </span>
                                             </td>
                                             <td className="p-6 text-sm text-slate-500 font-medium">
-                                                {new Date(app.createdAt).toLocaleDateString()}
+                                                {new Date(getUTCAsLocal(app.createdAt)).toLocaleDateString()}
                                             </td>
                                             <td className="p-6">
                                                 <StatusPulse status={app.status} />
@@ -404,7 +404,7 @@ function ApplicationCard({ app, delay, onOpen }) {
             <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 p-5 sm:p-6 border-b border-slate-200 dark:border-slate-800/30 relative">
                 <div className="flex justify-between items-start mb-6">
                     <StatusPulse status={app.status} />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{new Date(app.createdAt).toLocaleDateString()}</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{new Date(getUTCAsLocal(app.createdAt)).toLocaleDateString()}</span>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -445,7 +445,7 @@ function ApplicationCard({ app, delay, onOpen }) {
                             <Calendar size={18} className="text-emerald-600 dark:text-emerald-500" />
                             <div>
                                 <p className="text-[9px] font-black text-emerald-600 dark:text-emerald-500 uppercase tracking-widest leading-none mb-1">Entretien fixé</p>
-                                <p className="text-xs font-black text-slate-700 dark:text-white">{new Date(app.interviewDate).toLocaleString()}</p>
+                                <p className="text-xs font-black text-slate-700 dark:text-white">{new Date(getUTCAsLocal(app.interviewDate)).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>

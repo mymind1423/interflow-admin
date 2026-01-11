@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { calculateAge } from "../../utils/dateUtils";
+import { calculateAge, getUTCAsLocal } from "../../utils/dateUtils";
 
 
 export default function AdminPlanning() {
@@ -140,8 +140,8 @@ export default function AdminPlanning() {
 
         filteredInterviews.forEach(item => {
             const interviewData = [
-                new Date(item.date).toLocaleDateString(),
-                new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                new Date(getUTCAsLocal(item.date)).toLocaleDateString(),
+                new Date(getUTCAsLocal(item.date)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 item.company,
                 item.student + (item.studentDateOfBirth ? ` (${calculateAge(item.studentDateOfBirth)} ans)` : ""),
                 item.title,
@@ -183,8 +183,8 @@ export default function AdminPlanning() {
         ];
 
         const data = filteredInterviews.map(i => ({
-            date: new Date(i.date).toLocaleDateString(),
-            time: new Date(i.date).toLocaleTimeString(),
+            date: new Date(getUTCAsLocal(i.date)).toLocaleDateString(),
+            time: new Date(getUTCAsLocal(i.date)).toLocaleTimeString(),
             company: i.company,
             student: i.student,
             age: i.studentDateOfBirth ? calculateAge(i.studentDateOfBirth) : "",
@@ -436,8 +436,8 @@ function InterviewRow({ item, onRemind, delay, remindingId }) {
             <div className="flex items-center gap-6">
                 {/* Date Square */}
                 <div className={`w-16 h-16 rounded-2xl flex flex-col items-center justify-center border shadow-xl shrink-0 group-hover:scale-105 transition-transform ${isToday ? 'bg-emerald-500 text-white border-emerald-400 shadow-emerald-500/20' : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800'}`}>
-                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{new Date(item.date).toLocaleString('default', { month: 'short' })}</span>
-                    <span className="text-2xl font-black">{new Date(item.date).getDate()}</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">{new Date(getUTCAsLocal(item.date)).toLocaleString('default', { month: 'short' })}</span>
+                    <span className="text-2xl font-black">{new Date(getUTCAsLocal(item.date)).getDate()}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -450,7 +450,7 @@ function InterviewRow({ item, onRemind, delay, remindingId }) {
                         </span>
                     </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-500 dark:text-slate-400 font-medium">
-                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500" /> {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="flex items-center gap-1.5"><Clock size={14} className="text-emerald-500" /> {new Date(getUTCAsLocal(item.date)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         <span className="flex items-center gap-1.5"><Building size={14} className="text-indigo-500" /> {item.company}</span>
                         <span className="flex items-center gap-1.5"><User size={14} className="text-purple-500" /> {item.student} {item.studentDateOfBirth ? `(${calculateAge(item.studentDateOfBirth)} ans)` : ""}</span>
                     </div>

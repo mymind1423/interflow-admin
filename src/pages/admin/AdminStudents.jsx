@@ -6,7 +6,7 @@ import { User, Mail, GraduationCap, FileText, Trash2, Search, Download, Filter, 
 import { SkeletonTable } from "../../components/common/Skeletons";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
-import { calculateAge } from "../../utils/dateUtils";
+import { calculateAge, getUTCAsLocal } from "../../utils/dateUtils";
 import ConfirmationModal from "../../components/common/ConfirmationModal";
 
 export default function AdminStudents() {
@@ -401,7 +401,7 @@ export default function AdminStudents() {
                                                             <div className="p-3 bg-indigo-50 dark:bg-indigo-500/10 rounded-2xl text-indigo-600 dark:text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all"><Briefcase size={20} /></div>
                                                             <div>
                                                                 <h4 className="font-black text-slate-800 dark:text-white">{app.jobTitle}</h4>
-                                                                <p className="text-xs text-slate-500 font-bold">{app.companyName} • {new Date(app.createdAt).toLocaleDateString()}</p>
+                                                                <p className="text-xs text-slate-500 font-bold">{app.companyName} • {new Date(getUTCAsLocal(app.createdAt)).toLocaleDateString()}</p>
                                                             </div>
                                                         </div>
                                                         <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border ${app.status === 'ACCEPTED' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-200 dark:border-emerald-500/20' :
@@ -427,7 +427,7 @@ export default function AdminStudents() {
                                                             <div className="p-3 bg-rose-50 dark:bg-rose-500/10 rounded-2xl text-rose-600 dark:text-rose-500 group-hover:bg-rose-500 group-hover:text-white transition-all"><Calendar size={20} /></div>
                                                             <div>
                                                                 <h4 className="font-black text-slate-800 dark:text-white">{item.title}</h4>
-                                                                <p className="text-xs text-slate-500 font-bold">{item.company} • {new Date(item.date).toLocaleString()}</p>
+                                                                <p className="text-xs text-slate-500 font-bold">{item.company} • {new Date(getUTCAsLocal(item.date)).toLocaleString()}</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
