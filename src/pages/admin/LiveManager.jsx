@@ -8,6 +8,8 @@ import toast from "react-hot-toast";
 import { exportToExcel } from "../../utils/excelExporter";
 import StudentDetailModal from '../../components/admin/StudentDetailModal';
 
+import { getUTCAsLocal } from "../../utils/dateUtils";
+
 const LiveManager = () => {
     const [activeTab, setActiveTab] = useState("live"); // 'live' | 'history' | 'retained'
     const [data, setData] = useState({ stats: { active: 0, queue: 0, completed: 0 }, interviews: [], lastUpdated: null });
@@ -42,7 +44,7 @@ const LiveManager = () => {
             // For now let's assume we fetch all interviews for history and filter client-side or use another endpoint
             const allInterviews = await adminApi.getInterviews(); // Reuse existing endpoint
             // Filter history to COMPLETED or any historical status, include retained
-            const completed = allInterviews.filter(i => i.status === 'COMPLETED');
+            const completed = allInterviews.filter(i => i.status === 'COMPLETED' || i.isRetained);
             setHistory(completed);
 
         } catch (err) {
@@ -106,7 +108,7 @@ const LiveManager = () => {
         const exportData = history.map(h => ({
             companyName: h.companyName,
             studentName: h.studentName,
-            date: new Date(h.dateTime).toLocaleDateString(),
+            date: new Date(getUTCAsLocal(h.dateTime)).toLocaleDateString(),
             score: h.score ? `${h.score}/10` : 'N/A',
             remarks: h.remarks || "",
             isRetained: h.isRetained ? "OUI" : "NON"
@@ -379,7 +381,7 @@ const InterviewCard = ({ item, idx, onClick }) => {
                         <div className="flex items-center gap-2">
                             <Clock size={14} className={item.liveStatus === 'active' ? "text-emerald-500 animate-pulse" : "text-slate-400 dark:text-slate-500"} />
                             <span className={`font-bold ${item.liveStatus === 'active' ? "text-emerald-600 dark:text-emerald-400" : "text-slate-500 dark:text-slate-400"}`}>
-                                {new Date(item.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {new Date(getUTCAsLocal(item.dateTime)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         </div>
                     </div>
@@ -462,7 +464,7 @@ const HistoryCard = ({ item, onClick }) => (
                     {item.studentPhoto ? <img src={item.studentPhoto} alt="" className="w-full h-full object-cover" /> : <User size={16} className="m-1.5 text-slate-400" />}
                 </div>
                 <h4 className="text-lg font-bold text-slate-800 dark:text-white group-hover:text-indigo-500 transition-colors">{item.studentName}</h4>
-                <span className="text-xs font-medium text-slate-500 flex items-center gap-1"><Clock size={12} /> {new Date(item.dateTime).toLocaleDateString()}</span>
+                <span className="text-xs font-medium text-slate-500 flex items-center gap-1"><Clock size={12} /> {new Date(getUTCAsLocal(item.dateTime)).toLocaleDateString()}</span>
                 {item.isRetained && (
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-500/20">
                         🌟 Retenu
