@@ -28,7 +28,7 @@ const LiveManager = () => {
     // Derived Stats
     const totalRetained = useMemo(() => history.filter(h => h.isRetained).length, [history]);
     const retentionRate = useMemo(() => {
-        const completed = history.filter(h => h.status === 'COMPLETED').length;
+        const completed = history.length;
         if (completed === 0) return 0;
         return ((totalRetained / completed) * 100).toFixed(1);
     }, [history, totalRetained]);
