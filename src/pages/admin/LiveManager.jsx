@@ -46,9 +46,11 @@ const LiveManager = () => {
             // Filter history to COMPLETED or any historical status, include retained
             // Filter history: COMPLETED, or RETAINED, or (ACCEPTED/CONFIRMED and in the past)
             // This ensures we count all "finished" interviews for the retention rate
+            // Filter history: COMPLETED, or RETAINED, or (ACCEPTED/CONFIRMED and in the past)
+            // We use the RAW date for comparison against 'now', not the display-shifted one.
             const now = new Date();
             const completed = allInterviews.filter(i => {
-                const interviewDate = new Date(getUTCAsLocal(i.dateTime));
+                const interviewDate = new Date(i.dateTime); // Raw UTC date
                 const isPast = interviewDate < now;
                 const isCancelled = i.status === 'CANCELLED' || i.status === 'REJECTED' || i.status === 'DECLINED';
                 const isFinishedStatus = i.status === 'COMPLETED' || i.status === 'CHECKED_IN';
