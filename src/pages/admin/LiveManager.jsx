@@ -44,13 +44,20 @@ const LiveManager = () => {
             // For now let's assume we fetch all interviews for history and filter client-side or use another endpoint
             const allInterviews = await adminApi.getInterviews(); // Reuse existing endpoint
             // Filter history to COMPLETED or any historical status, include retained
-            // Filter history: COMPLETED, or RETAINED, or (ACCEPTED and in the past)
+            // Filter history: COMPLETED, or RETAINED, or (ACCEPTED/CONFIRMED and in the past)
             // This ensures we count all "finished" interviews for the retention rate
             const now = new Date();
             const completed = allInterviews.filter(i => {
-                const isPast = new Date(getUTCAsLocal(i.dateTime)) < now;
+                const interviewDate = new Date(getUTCAsLocal(i.dateTime));
+                const isPast = interviewDate < now;
+                const isCancelled = i.status === 'CANCELLED' || i.status === 'REJECTED' || i.status === 'DECLINED';
                 const isFinishedStatus = i.status === 'COMPLETED' || i.status === 'CHECKED_IN';
-                return (isFinishedStatus || (i.status === 'ACCEPTED' && isPast) || i.isRetained) && i.status !== 'CANCELLED';
+
+                // Include if:
+                // 1. Explicitly marked finished (COMPLETED, CHECKED_IN)
+                // 2. Is Retained (always counts)
+                // 3. Is in the past and NOT cancelled (covers ACCEPTED/CONFIRMED that weren't updated)
+                return (isFinishedStatus || i.isRetained || (isPast && !isCancelled));
             });
             setHistory(completed);
 
